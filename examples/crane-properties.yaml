@@ -1,0 +1,58 @@
+%YAML 1.2
+--- # properties of the gantrycrane
+pendulum mass: 0.08472          # [kg]
+pendulum damping: 9.4544e-05    # unit?
+rope length: 0.22      # [m]
+cart acceleration limit: 2.25 # m/s^2 previous value 7.11547970575 "overload:" 10
+cart velocity limit: 0.281  # m/s previous value 0.270 "overload:" 300
+rope angle limit: pi/2          # rad
+
+# properties related to machine identification
+machine id: 1
+machine name: ender3
+
+# address to use for inter-script comms
+address: localhost
+
+# mqtt stuff
+port: 1883
+validator topic: gantrycrane/validator
+simulator topic: gantrycrane/simulator
+
+# properties related to associated database
+connect to db: True
+database address: "127.0.0.1"
+database name: gantrycrane
+database user: postgres
+database password: postgres
+
+# simulator settings
+replications: 30
+# parameter settings for r for sampling, could increase in the future if needed
+r mean: 0.45
+r SD: 0.00025
+x0 SD: 0.00025
+theta0 SD: 0.000198
+omega0 SD: 0.000159
+
+# validator settings
+# below are names of metrics that can be calculated, 0/1 says if they need to be calculated as validation or not.
+normalized euclidean distance: 1
+mahalanobis distance: 1
+frequentist metric: 1 # default significance level is 0.05, good enough for now.
+global frequentist metric: 1
+reliability metric: 1
+
+# Acceptance criteria (unsure if they need to be hardcoded here.)
+
+# ports
+angleUARTPort: COM9
+# gantryUARTPort: COM10
+gantryPort: COM11
+hoistPort: COM10
+
+# printer calibration state
+# when assumed false, the X axis needs homing. 
+# Y axis needs manual calibration to zero position.
+# code should put calibrated to true once it's done.
+calibrated: False
