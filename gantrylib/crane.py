@@ -2,16 +2,12 @@
 # based on stepper_config.py
 
 import time
-from datetime import datetime, timedelta
 import numpy as np
-from gantryLib.motors import GantryStepper, HoistStepper
+from gantrylib.motors import GantryStepper, HoistStepper
 import re
 import serial
 
-from pytrinamic.connections import ConnectionManager
-from pytrinamic.ic import TMC4671
 from scipy.signal import savgol_filter
-from scipy.signal import correlate
 
 import logging
 

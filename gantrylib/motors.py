@@ -2,7 +2,6 @@ import time
 from abc import ABCMeta, abstractmethod
 from pytrinamic.evalboards import TMC4671_eval
 from pytrinamic.ic import TMC4671
-import pytrinamic
 from pytrinamic.connections import ConnectionManager
 from numpy import pi
 
