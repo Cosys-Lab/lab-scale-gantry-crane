@@ -1,5 +1,4 @@
 from abc import abstractmethod
-import json
 import pickle
 from threading import Event
 from typing_extensions import override
@@ -50,21 +49,11 @@ class GantryController():
                 cur.execute("SELECT MAX(run_id) FROM run WHERE machine_id = 1;")
                 try:
                     self.run = cur.fetchall()[0][0] + 1
-                except:
+                except Exception:
                     # if an exception occurs, there simply aren't any runs yet.
                     # so add run number 0.
                     self.run = 0
         self.repls = props["replications"]
-
-        # mqtt setup
-        self.mqttc = mqtt.Client("GantryController")
-        self.mqttc.on_connect = self.on_connect
-        self.mqttc.on_message = self.on_message
-        self.mqttc.connect("localhost")
-        self.mqttc.loop_start()
-
-        self.response_event = Event()  # Event to block until trajectory is received
-        self.received_trajectory = None
 
         logging.info("Initialized " + str(self))
 
@@ -76,33 +65,6 @@ class GantryController():
             self.dbconn.close()
         except Exception:
             pass
-        try:
-            self.mqttc.loop_stop()
-        except Exception:
-            pass
-
-    def on_connect(self, client, userdata, flags, rc):
-        print(f"Connected with result code {rc}")
-        # Subscribe to the response topic for the trajectory
-        response_topic = f"command/bip-server/{self.id}/res/store-trajectory/#"
-        client.subscribe(response_topic)
-        print(f"Subscribed to topic: {response_topic}")
-        response_topic = f"command/bip-server/{self.id}/res/store-measurement/#"
-        client.subscribe(response_topic)
-        print(f"Subscribed to topic: {response_topic}")
-        response_topic = f"command/bip-server/{self.id}/res/generate-trajectory/#"
-        client.subscribe(response_topic)
-        print(f"Subscribed to topic: {response_topic}")
-
-    def on_message(self, client, userdata, msg):
-        try:
-            # Deserialize the trajectory
-            if "generate-trajectory" in msg.topic:
-                print(f"Received trajectory on topic: {msg.topic}")
-                self.received_trajectory = pickle.loads(msg.payload)
-            self.response_event.set()  # Signal that the response has been received
-        except Exception as e:
-            print(f"Error processing message: {e}")
     
     @abstractmethod
     def connectToCrane(self):
@@ -115,17 +77,7 @@ class GantryController():
     
     def generateTrajectory(self, start, stop, genmethod = "ocp"):
         # Publish the request to generate a trajectory
-        request_topic = f"command/bip-server/{self.id}/req/generate-trajectory/generate-trajectory"
-        payload = {
-            "start": start,
-            "stop": stop,
-            "genmethod": genmethod
-        }
-        self.mqttc.publish(request_topic, json.dumps(payload), qos = 2, retain=False)
-        print(f"Published request to topic: {request_topic}")
-        print("Waiting for trajectory response...")
-        self.response_event.wait()  # Blocks until the response is received
-        self.response_event.clear()
+        # TODO: add code to generate trajectory
         return self.received_trajectory
 
     def moveWithLog(self, target, generator = 'ocp'):
@@ -159,18 +111,6 @@ class GantryController():
         self.run += 1
         return traj, measurement
 
-    def notifySimulator(self):
-        # for testing phases, simconn may not exist yet qos 2
-        try:
-            ret = self.mqttc.publish(self.simulatortopic, payload=str({"traj_id":self.run, "repls":self.repls}), qos=2, retain=False)
-            ret.wait_for_publish()
-            # I guess payload is going to be cast to a string. not to worry, the numbers are integers anyway,
-            # all precision numbers are stored in the database
-            # do proper processing here to recover from not connected (later...)
-        except Exception as e:
-            print(e)
-            pass
-
     def storeTrajectory(self, traj):
         """
         traj is assumed to be tuple as returned by generateTrajectory
@@ -184,13 +124,7 @@ class GantryController():
         ddthetas: angular acceleration of solution  [rad/s^2]
         us      : input force acting on cart [N]
         """
-        request_topic = f"command/bip-server/{self.id}/req/{self.run}/store-trajectory"
-        serialized_trajectory = pickle.dumps(traj)
-        self.mqttc.publish(request_topic, serialized_trajectory, qos = 2, retain=False)
-        print(f"Published request to topic: {request_topic}")
-        print("Waiting for trajectory store response...")
-        self.response_event.wait()  # Blocks until the response is received
-        self.response_event.clear()
+        # TODO: add the storing code again
         return   
 
     @abstractmethod
@@ -212,22 +146,8 @@ class GantryController():
         theta : angular position [rad]
         omega : angular velocity [rad/s]
         """
-        request_topic = f"command/bip-server/{self.id}/req/{self.run}/store-measurement"
-        serialized_trajectory = pickle.dumps(measurement)
-        self.mqttc.publish(request_topic, serialized_trajectory, qos = 2, retain=False)
-        print(f"Published request to topic: {request_topic}")
-        print("Waiting for measurement store response...")
-        self.response_event.wait()  # Blocks until the response is received
-        self.response_event.clear()
+        # TODO: Add the storing code again
         return 
-
-    def notifyValidator(self):
-        # for testing phases, valconn may not exist yet
-        try:
-            ret = self.mqttc.publish(self.validatortopic, payload=str({"traj_id":self.run, "src":"Controller"}), qos=2, retain=False)
-            ret.wait_for_publish()
-        except Exception as e:
-            print(e)
 
     def moveWithoutLog(self, target, generator='ocp'):
         """
@@ -251,25 +171,6 @@ class GantryController():
         # align measurement to trajectory for storing
         measurement = self._align_measurement_to_trajectory(traj, measurement)
         return traj, measurement
-    
-    def mqttMoveWithoutLog(self, target, generator='ocp'):
-        """
-        mqtt version of moveWithoutLog. Returns the final position of the motor rather than
-        the trajectory and measurement
-        """
-        traj, measurement = self.moveWithoutLog(target=target, generator=generator)
-
-        return measurement[1][-1]
-    
-    def mqttMoveWithLog(self, target, generator='ocp'):
-        """
-        mqtt version of moveWithoutLog. Returns the final position of the motor rather than
-        the trajectory and measurement
-        """
-        traj, measurement = self.moveWithLog(target=target, generator=generator)
-
-        return measurement[1][-1]
-
     
     def moveTrajectoryWithoutLog(self, traj):
         """
@@ -529,22 +430,7 @@ if __name__ == "__main__":
     with PhysicalGantryController("./crane-properties.yaml") as gc:
         gc.hoist(0.3)
         traj, meas = gc.moveWithoutLog(0.6)
-    # with PhysicalGantryController("./crane-properties.yaml") as gc:
-    # #with MockGantryController("./crane-properties.yaml") as gc:
-    #     print(gc.hoist(0.3))
-    #     sleep(2)
-    #     traj, meas = gc.moveWithoutLog(0.45, generator='ocp')
-    #     sleep(2)
-    #     # traj, meas = gc.moveWithLog(0.45)
-    #     print(gc.hoist(0))
-    #     sleep(2)
-    #     if type(gc) is PhysicalGantryController:
-    #         gc.printer.gantryStepper.setPositionMode()
-    #         gc.printer.gantryStepper.setPosition(0)
-    #         gc.printer.gantryStepper.setVelocityLimit(6000)
         fig, (ax1, ax2, ax3, ax4) = plt.subplots(4)
-        # bug in .timestamp() makes me have to convert this way.
-        # meas_t = [(t - datetime.min).total_seconds() for t in meas[0]]
         ax1.plot(traj[0], traj[1])
         ax1.plot(meas[0], meas[1])
         ax2.plot(traj[0], traj[2])
@@ -553,25 +439,4 @@ if __name__ == "__main__":
         ax3.plot(meas[0], meas[4])
         ax4.plot(traj[0], traj[3])
         ax4.plot(meas[0], meas[3])
-    #     #tg.saveToCSV('testfile.csv', (t, x, dx, ddx, theta, omega, alpha, u), ("t", "x", "v", "a", "theta", "omega", "alpha", "u"))
-    #     #tg.saveParamToMat('params.mat')
-    #     #tg.saveDataToMat('data.mat', (t, x, dx, ddx, theta, omega, alpha, u), ("t", "x", "v", "a", "theta", "omega", "alpha", "u"))
         plt.show()
-    #     #sleep(1)
-    #     #traj, meas = gc.moveWithoutLog(0)
-    #     print(gc.printer.gantryStepper.mm_s_to_rpm)
-        
-        # logging.info("trajectory data:")
-        # logging.info("t_gen = " + str(list(traj[0])))
-        # logging.info("x_gen = " + str(list(traj[1])))
-        # logging.info("v_gen = " + str(list(traj[2])))
-        # logging.info("theta_gen = " + str(list(traj[4])))
-        # logging.info("measurement data:")
-        # logging.info("t_meas = " + str(meas[0]))
-        # logging.info("x_meas = " + str(meas[1]))
-        # logging.info("v_meas = " + str(meas[2]))
-        # logging.info("theta_meas = " + str(meas[4]))
-
-
-        
-    
