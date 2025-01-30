@@ -16,7 +16,7 @@ This is the documentation of the lab scale gantry crane. It is a little gantry c
 
 ### Installing gantrylib
 
-The examples rely on the gantrylib `gantrylib` module. Since there's no official release we recommend installing it in editable mode, this also allows for on the fly code changes. 
+The examples rely on the `gantrylib` module. Since there's no official release we recommend installing it in editable mode, this also allows for on the fly code changes. In the root of this repository run:
 
     python -m pip install -e .
 
