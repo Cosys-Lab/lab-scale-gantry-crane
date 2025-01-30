@@ -1,0 +1,4 @@
+.small-img {
+    width: 240px;
+    height: auto; /* Keep aspect ratio */
+}

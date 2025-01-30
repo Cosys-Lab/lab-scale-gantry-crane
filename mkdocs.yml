@@ -1,0 +1,25 @@
+site_name: Lab Scale Gantry Crane Docs
+nav:
+  - Home: index.md
+  - Build: build.md
+  - Arduino: arduino.md
+  - Examples: examples.md
+  - gantrylib: gantrylib.md
+  - About: about.md
+theme: readthedocs
+
+markdown_extensions:
+- attr_list
+
+extra_css:
+  - assets/extra.css
+
+
+plugins:
+- search
+- mkdocstrings:
+    default_handler: python
+    handlers:
+      python:
+        options:
+          show_source: false
