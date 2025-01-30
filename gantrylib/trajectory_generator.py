@@ -1,3 +1,4 @@
+from griffe import Docstring
 import yaml
 from rockit import *
 from casadi import *
@@ -10,14 +11,14 @@ import scipy.linalg as la
 from scipy.integrate import solve_ivp
 
 class TrajectoryGenerator:
+    """A class to generate an optimal trajectory that moves the crane laterally from one position to another one.
+    """
 
     def __init__(self, properties_file) -> None:
-        """
-        Parameters
-        ----------
-        properties_file : String
-            path to the properties file of the crane whose trajectories
-            will be calculated
+        """ Initialize a TrajectoryGenerator instance.
+
+        Args:
+            properties_file: path to a properties file containing problem details.
         """
         with open(properties_file, 'r') as f:
             props = yaml.safe_load(f)
@@ -31,30 +32,24 @@ class TrajectoryGenerator:
             self.theta_lim = eval(props["rope angle limit"])
 
     def generateTrajectory(self, start, stop):
-        """
-        Generates an optimal, monotone trajectory from start to stop,
+        """Generates an optimal, monotone trajectory from start to stop,
         adhering to the limits imposed by the configurationfile used
         to create the TrajectoryGenerator
 
-        Parameters
-        ----------
-        start : float
-            start position of the trajectory
-        stop : float
-            stop position of the trajectory
+        Args:
+            start (float): start position of the trajectory
+            stop (float): stop position of the trajectory
 
-        Returns
-        -------
-        tuple (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas)
-        ts      : sample times of solution  [s]
-        xs      : positions of solution     [m]
-        dxs     : velocity of solution      [m/s]
-        ddxs    : acceleration of solution  [m/s^2]
-        thetas  : angular position of solution  [rad]
-        dthetas : angular velocity of solution  [rad/s]
-        ddthetas: angular acceleration of solution  [rad/s^2]
+        Returns:
+            tuple: tuple (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas) where
+                ts      : sample times of solution  [s]
+                xs      : positions of solution     [m]
+                dxs     : velocity of solution      [m/s]
+                ddxs    : acceleration of solution  [m/s^2]
+                thetas  : angular position of solution  [rad]
+                dthetas : angular velocity of solution  [rad/s]
+                ddthetas: angular acceleration of solution  [rad/s^2]
         """
-        
         # -------------------------------
         # Problem parameters
         # -------------------------------
@@ -197,6 +192,22 @@ class TrajectoryGenerator:
             return None    
         
     def generateTrajectoryLQR(self, start, stop):
+        """Generates an optimal trajectory using a Linear Quadratic Regulator
+
+        Args:
+            start (float): Start position
+            stop (float): Stop position
+
+        Returns:
+            tuple: tuple (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas) where
+                ts      : sample times of solution  [s]
+                xs      : positions of solution     [m]
+                dxs     : velocity of solution      [m/s]
+                ddxs    : acceleration of solution  [m/s^2]
+                thetas  : angular position of solution  [rad]
+                dthetas : angular velocity of solution  [rad/s]
+                ddthetas: angular acceleration of solution  [rad/s^2]
+        """
         v_max = 2*self.v_cart_lim # simple initialization
         i = 0
         while v_max > self.v_cart_lim and i < 2000:
@@ -259,8 +270,12 @@ class TrajectoryGenerator:
         return sol, dxdt
 
     def saveToCSV(self, filename, data, columnnames):
-        """
-        Saves output to CSV file, for example, see __main__
+        """Save output to CSV file.
+
+        Args:
+            filename (string): The filename.
+            data (tuple): data as returned by the trajectory generation methods.
+            columnnames (list): list of columnnames.
         """
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
@@ -269,17 +284,22 @@ class TrajectoryGenerator:
                 writer.writerow(row)
 
     def saveDataToMat(self, filename, data, keys):
-        """
-        Saves output to mat file
+        """Save output to a .mat file.
+
+        Args:
+            filename (string): The filename
+            data (tuple): data as returned by the trajectory generation methods.
+            keys (list): list of keys to use.
         """
         dic = dict(zip(keys, data))
         savemat(filename, dic)
 
     def saveParamToMat(self, filename):
-        """
-        Saves parameters of this current trajectory generator to a mat
-        file that is to be stored together with the generated trajectory
-        I might need that in matlab
+        """Save the parameters of this current trajectory generator to a mat
+        file.
+
+        Args:
+            filename (string): The filename.
         """
         dic = {"mp": self.mp, "dp": self.dp, "r": self.r}
         savemat(filename, dic)
