@@ -4,7 +4,6 @@ from casadi import *
 import numpy as np
 from numpy import pi
 from scipy.constants import g
-import matplotlib.pyplot as plt
 import csv
 from scipy.io import savemat
 import scipy.linalg as la
@@ -284,17 +283,3 @@ class TrajectoryGenerator:
         """
         dic = {"mp": self.mp, "dp": self.dp, "r": self.r}
         savemat(filename, dic)
-
-if __name__ == "__main__":
-    tg = TrajectoryGenerator("crane-properties.yaml")
-    (t, x, dx, ddx, theta, omega, alpha, u) = tg.generateTrajectory(0, 0.65)
-    print("dt:")
-    print(t[1:-1] - t[0:-2])
-    fig, (ax1, ax2) = plt.subplots(2)
-    ax1.plot(t, x)
-    ax1.plot(t, dx)
-    ax2.plot(t, ddx)
-    #tg.saveToCSV('testfile.csv', (t, x, dx, ddx, theta, omega, alpha, u), ("t", "x", "v", "a", "theta", "omega", "alpha", "u"))
-    #tg.saveParamToMat('params.mat')
-    #tg.saveDataToMat('data.mat', (t, x, dx, ddx, theta, omega, alpha, u), ("t", "x", "v", "a", "theta", "omega", "alpha", "u"))
-    plt.show()
