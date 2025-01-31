@@ -13,10 +13,20 @@ import logging
 
 class Crane:
     """
-    Class to control the crane.
+    A class representing the gantrycrane.
     """
 
     def __init__(self, gantryPort, hoistPort, angleUARTPort, gantryUARTPort, calibrated = False, I_max = 1) -> None:
+        """Initializes a Crane instance.
+
+        Args:
+            gantryPort (string): Serial port of the motor controller controlling the lateral movement motor.
+            hoistPort (string): Serial port of the motor controller controlling the hoisting motor.
+            angleUARTPort (string): Serial port of the Arduino that measures the swing angle
+            gantryUARTPort (string): unused
+            calibrated (bool, optional): Whether the crane's motors are already calibrated or not. Defaults to False.
+            I_max (int, optional): Maximal motor current. Defaults to 1A
+        """
         
         # create motors
         self.gantryStepper = GantryStepper(port=gantryPort, calibrated=calibrated, I_max= I_max)
@@ -41,9 +51,21 @@ class Crane:
         self.buffer = ""
 
     def __enter__(self):
+        """Enter the runtime context for the crane.
+
+        Returns:
+            Crane: The crane instance
+        """
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the runtime context and clean up resources.
+
+        Args:
+            exc_type (Type[BaseException] or None): The type of the exception if one was raised, else None.
+            exc_value (BaseException or None): The exception instance if one was raised, else None.
+            traceback (TracebackType or None): The traceback object if an exception was raised, else None.
+        """
         self.gantryStepper.mc_interface.close()
         self.hoistStepper.mc_interface.close()
         if self.angleUART is not None:
@@ -51,13 +73,20 @@ class Crane:
         self.gantryUART.close()
 
     def setWaypoints(self, waypoints):
+        """Sets the waypoints to be executed by the crane.
+
+        Args:
+            waypoints (list[Waypoint]): List of Waypoints.
+        """
         self.waypoints = waypoints
 
-    def executeWaypointsPositionV3(self):
-        """
-        Attempt to execute the waypoints in position mode,
-        works with "global" timing rather than delta timing.
+    def executeWaypointsPosition(self):
+        """Attempt to execute the waypoints in position mode.
 
+        Works by setting the waypoint and altering the motor's velocity limit as the trajectory moves along.
+
+        Returns:
+            tuple(list[float], list[float], list[float], list[float], list[float], list[float]): tuple(t, x, v, a, theta, omega), 
         """
         self.gantryStepper.setPositionMode()
 
@@ -103,7 +132,8 @@ class Crane:
             #v.append(self.mc.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True))
             v.append(self.gantryStepper.getVelocity())
             dt = time.time() - tick
-            new_a, new_theta, new_omega = self.readAngle()
+            new_theta, new_omega = self.readAngle()
+            new_a = 0 # not measured for now.
             theta.append(new_theta)
             a.append(new_a)
             omega_arduino.append(new_omega)
@@ -160,10 +190,18 @@ class Crane:
         return (t, x, v, a, theta, omega)
 
     def _testMove(self):
+        """Make the crane perform a testmove
+
+        Added for internal testing purposes, don't use.
+        """
         self.gantryStepper._testMove()
         # self.hoistStepper._testMove()
 
     def homeAllAxes(self):
+        """Homes all axes.
+
+        Hoiststepper isn't homed, since we don't have a proper automated homing procedure for it.
+        """
         self.gantryStepper.setPositionMode()
         # self.hoistStepper.setPositionMode()
         self.gantryStepper.setPosition(0)
@@ -176,6 +214,8 @@ class Crane:
             pass
 
     def homeGantry(self):
+        """Homes the cart on the gantry
+        """
         self.gantryStepper.setPositionMode()
         self.gantryStepper.setPosition(0)
         self.gantryStepper.setLimits(acc=2147483647, vel=420)
@@ -185,6 +225,11 @@ class Crane:
             pass
     
     def readAngle(self):
+        """Reads the latest received angle from the angleUART
+
+        Returns:
+            tuple(float, float): Tuple(theta, omega)
+        """
         if self.angleUART is not None:
             # Add incoming data to the buffer
             self.buffer += self.angleUART.read(self.angleUART.in_waiting).decode('utf-8')
@@ -204,16 +249,18 @@ class Crane:
  
                 self.lastAngle = theta # * 1/0.76023946 scale factor that might be needed
                 self.lastOmega = omega
-                return a, theta, omega
+                return theta, omega
             else:
                 # No match found, return None
                 logging.info("no match, returning previous values")
-                return 0, self.lastAngle, self.lastOmega
+                return self.lastAngle, self.lastOmega
         else:
-            return (0, 0, 0)
+            return (0, 0)
 
 
 class Waypoint():
+    """A class representing a Waypoint, that is, one point in a trajectory
+    """
 
     def __init__(self, t, x, v, a, l = 150, dr = 0, ddr = 0) -> None:
         self.x = x
