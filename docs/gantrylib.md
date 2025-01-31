@@ -29,3 +29,9 @@
 ### TrajectoryGenerator
 
 ::: gantrylib.trajectory_generator.TrajectoryGenerator
+
+## gantry_controller
+
+## GantryController
+
+::: gantrylib.gantry_controller.GantryController
