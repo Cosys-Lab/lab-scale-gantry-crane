@@ -1,0 +1,2530 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>gantrylib - Lab Scale Gantry Crane Docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../assets/extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "gantrylib";
+        var mkdocs_page_input_path = "gantrylib.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Lab Scale Gantry Crane Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../build/">Build</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../arduino/">Arduino</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">gantrylib</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#crane">crane</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#crane_1">Crane</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane">Crane</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane.__enter__">__enter__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane.__exit__">__exit__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane.__init__">__init__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane.executeWaypointsPosition">executeWaypointsPosition</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane.homeAllAxes">homeAllAxes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane.homeGantry">homeGantry</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane.readAngle">readAngle</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.crane.Crane.setWaypoints">setWaypoints</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#motors">motors</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#motor">Motor</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor">Motor</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.__init__">__init__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.getPosition">getPosition</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.getTorque">getTorque</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.getVelocity">getVelocity</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setAccelLimit">setAccelLimit</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setLimits">setLimits</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setPosition">setPosition</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setPositionMode">setPositionMode</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setTorque">setTorque</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setTorqueMode">setTorqueMode</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setVelocity">setVelocity</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setVelocityLimit">setVelocityLimit</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Motor.setVelocityMode">setVelocityMode</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#stepper">Stepper</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Stepper">Stepper</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.Stepper.__init__">__init__</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#gantrystepper">GantryStepper</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.GantryStepper">GantryStepper</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.GantryStepper.__init__">__init__</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#hoiststepper">HoistStepper</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.HoistStepper">HoistStepper</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.motors.HoistStepper.__init__">__init__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#trajectory_generator">trajectory_generator</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#trajectorygenerator">TrajectoryGenerator</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.trajectory_generator.TrajectoryGenerator">TrajectoryGenerator</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.trajectory_generator.TrajectoryGenerator.__init__">__init__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.trajectory_generator.TrajectoryGenerator.generateTrajectory">generateTrajectory</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.trajectory_generator.TrajectoryGenerator.generateTrajectoryLQR">generateTrajectoryLQR</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.trajectory_generator.TrajectoryGenerator.saveDataToMat">saveDataToMat</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.trajectory_generator.TrajectoryGenerator.saveParamToMat">saveParamToMat</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.trajectory_generator.TrajectoryGenerator.saveToCSV">saveToCSV</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantry_controller">gantry_controller</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrycontroller">GantryController</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController">GantryController</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.__enter__">__enter__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.__exit__">__exit__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.__init__">__init__</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.connectToCrane">connectToCrane</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.executeTrajectory">executeTrajectory</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.generateTrajectory">generateTrajectory</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.hoist">hoist</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.moveTrajectoryWithoutLog">moveTrajectoryWithoutLog</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.moveWithLog">moveWithLog</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.moveWithoutLog">moveWithoutLog</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.simpleMove">simpleMove</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.storeMeasurement">storeMeasurement</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gantrylib.gantry_controller.GantryController.storeTrajectory">storeTrajectory</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../about/">About</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Lab Scale Gantry Crane Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">gantrylib</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="gantrylibmd">gantrylib.md</h1>
+<h2 id="crane">crane</h2>
+<h3 id="crane_1">Crane</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="gantrylib.crane.Crane"></a>
+    <div class="doc doc-contents first">
+
+
+        <p>A class representing the gantrycrane.</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.crane.Crane.__enter__" class="doc doc-heading">
+            <code class="highlight language-python">__enter__()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Enter the runtime context for the crane.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>Crane</code></b>              –
+              <div class="doc-md-description">
+                <p>The crane instance</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.crane.Crane.__exit__" class="doc doc-heading">
+            <code class="highlight language-python">__exit__(exc_type, exc_value, traceback)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Exit the runtime context and clean up resources.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>exc_type</code></b>
+                  (<code>Type[BaseException] or None</code>)
+              –
+              <div class="doc-md-description">
+                <p>The type of the exception if one was raised, else None.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>exc_value</code></b>
+                  (<code>BaseException or None</code>)
+              –
+              <div class="doc-md-description">
+                <p>The exception instance if one was raised, else None.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>traceback</code></b>
+                  (<code>TracebackType or None</code>)
+              –
+              <div class="doc-md-description">
+                <p>The traceback object if an exception was raised, else None.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.crane.Crane.__init__" class="doc doc-heading">
+            <code class="highlight language-python">__init__(gantryPort, hoistPort, angleUARTPort, gantryUARTPort, calibrated=False, I_max=1)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initializes a Crane instance.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>gantryPort</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>Serial port of the motor controller controlling the lateral movement motor.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>hoistPort</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>Serial port of the motor controller controlling the hoisting motor.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>angleUARTPort</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>Serial port of the Arduino that measures the swing angle</p>
+              </div>
+            </li>
+            <li>
+              <b><code>gantryUARTPort</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>unused</p>
+              </div>
+            </li>
+            <li>
+              <b><code>calibrated</code></b>
+                  (<code>bool</code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether the crane's motors are already calibrated or not. Defaults to False.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>I_max</code></b>
+                  (<code>int</code>, default:
+                      <code>1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Maximal motor current. Defaults to 1A</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.crane.Crane.executeWaypointsPosition" class="doc doc-heading">
+            <code class="highlight language-python">executeWaypointsPosition()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Attempt to execute the waypoints in position mode.</p>
+<p>Works by setting the waypoint and altering the motor's velocity limit as the trajectory moves along.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>(                  <code>(list[float], list[float], list[float], list[float], list[float], list[float])</code>
+)              –
+              <div class="doc-md-description">
+                <p>tuple(t, x, v, a, theta, omega),</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.crane.Crane.homeAllAxes" class="doc doc-heading">
+            <code class="highlight language-python">homeAllAxes()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Homes all axes.</p>
+<p>Hoiststepper isn't homed, since we don't have a proper automated homing procedure for it.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.crane.Crane.homeGantry" class="doc doc-heading">
+            <code class="highlight language-python">homeGantry()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Homes the cart on the gantry</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.crane.Crane.readAngle" class="doc doc-heading">
+            <code class="highlight language-python">readAngle()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Reads the latest received angle from the angleUART</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>(                  <code>(float, float)</code>
+)              –
+              <div class="doc-md-description">
+                <p>Tuple(theta, omega)</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.crane.Crane.setWaypoints" class="doc doc-heading">
+            <code class="highlight language-python">setWaypoints(waypoints)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Sets the waypoints to be executed by the crane.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>waypoints</code></b>
+                  (<code>list[<span title="gantrylib.crane.Waypoint">Waypoint</span>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>List of Waypoints.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="motors">motors</h2>
+<h3 id="motor">Motor</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="gantrylib.motors.Motor"></a>
+    <div class="doc doc-contents first">
+
+
+        <p>A class representing a motor.</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.__init__" class="doc doc-heading">
+            <code class="highlight language-python">__init__(port, pulley_circumference, I_max)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initializes a Motor instance.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>port</code></b>
+              –
+              <div class="doc-md-description">
+                <p>serial port of the motor controller</p>
+              </div>
+            </li>
+            <li>
+              <b><code>pulley_circumference</code></b>
+              –
+              <div class="doc-md-description">
+                <p>circumference of the motor pulley</p>
+              </div>
+            </li>
+            <li>
+              <b><code>I_max</code></b>
+              –
+              <div class="doc-md-description">
+                <p>maximum current</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.getPosition" class="doc doc-heading">
+            <code class="highlight language-python">getPosition()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the current position.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>              –
+              <div class="doc-md-description">
+                <p>The current position</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.getTorque" class="doc doc-heading">
+            <code class="highlight language-python">getTorque()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the actually exerted torque.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>              –
+              <div class="doc-md-description">
+                <p>The actually exerted torque.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.getVelocity" class="doc doc-heading">
+            <code class="highlight language-python">getVelocity()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the current velocity.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>              –
+              <div class="doc-md-description">
+                <p>The current velocity.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setAccelLimit" class="doc doc-heading">
+            <code class="highlight language-python">setAccelLimit(acc)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set acceleration limit.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>acc</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Acceleration limit.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setLimits" class="doc doc-heading">
+            <code class="highlight language-python">setLimits(acc, vel)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set acceleration and velocity limits.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>acc</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Acceleration limit.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>vel</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Velocity limit.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setPosition" class="doc doc-heading">
+            <code class="highlight language-python">setPosition(pos)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set the current position.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>pos</code></b>
+              –
+              <div class="doc-md-description">
+                <p>current position.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setPositionMode" class="doc doc-heading">
+            <code class="highlight language-python">setPositionMode()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set motor driver to position mode</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setTorque" class="doc doc-heading">
+            <code class="highlight language-python">setTorque(tgt)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set the target torque.</p>
+<p>Note: assumes printer is in torque mode.
+Printer can be set in torque mode with setTorqueMode.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>tgt</code></b>
+              –
+              <div class="doc-md-description">
+                <p>target torque</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setTorqueMode" class="doc doc-heading">
+            <code class="highlight language-python">setTorqueMode()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set motor drive to torque mode.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setVelocity" class="doc doc-heading">
+            <code class="highlight language-python">setVelocity(vel)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set the current velocity</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>vel</code></b>
+              –
+              <div class="doc-md-description">
+                <p>The current velocity.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setVelocityLimit" class="doc doc-heading">
+            <code class="highlight language-python">setVelocityLimit(vel)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set velocity limit.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>vel</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Velocity limit.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Motor.setVelocityMode" class="doc doc-heading">
+            <code class="highlight language-python">setVelocityMode()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set motor driver to velocity mode</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="stepper">Stepper</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="gantrylib.motors.Stepper"></a>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="gantrylib.motors.Motor" href="#gantrylib.motors.Motor">Motor</a></code></p>
+
+
+        <p>Specialization of the Motor class into a Stepper motor.</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.Stepper.__init__" class="doc doc-heading">
+            <code class="highlight language-python">__init__(port, pulley_diameter, I_max)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize a Stepper instance.</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="gantrystepper">GantryStepper</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="gantrylib.motors.GantryStepper"></a>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="gantrylib.motors.Stepper" href="#gantrylib.motors.Stepper">Stepper</a></code></p>
+
+
+        <p>Specializes stepper into the gantry stepper, that is the motor that does the lateral movement.</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.GantryStepper.__init__" class="doc doc-heading">
+            <code class="highlight language-python">__init__(port, calibrated=False, I_max=1)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initializes an instance of GantryStepper.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>port</code></b>
+              –
+              <div class="doc-md-description">
+                <p>The serial port of the motor controller.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>calibrated</code></b>
+                  (<code>bool</code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether the motor is calibrated or not. Defaults to False.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>I_max</code></b>
+              –
+              <div class="doc-md-description">
+                <p>The maximum currnet. Defaults to 1 Ampere.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h3 id="hoiststepper">HoistStepper</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="gantrylib.motors.HoistStepper"></a>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="gantrylib.motors.Stepper" href="#gantrylib.motors.Stepper">Stepper</a></code></p>
+
+
+        <p>Specializes stepper into the hoist stepper, that is the motor that does the hoisting movement.</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.motors.HoistStepper.__init__" class="doc doc-heading">
+            <code class="highlight language-python">__init__(port, calibrated=False, I_max=1)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initializes an instance of GantryStepper.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>port</code></b>
+              –
+              <div class="doc-md-description">
+                <p>The serial port of the motor controller.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>calibrated</code></b>
+                  (<code>bool</code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether the motor is calibrated or not. Defaults to False.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>I_max</code></b>
+              –
+              <div class="doc-md-description">
+                <p>The maximum currnet. Defaults to 1 Ampere.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="trajectory_generator">trajectory_generator</h2>
+<h3 id="trajectorygenerator">TrajectoryGenerator</h3>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="gantrylib.trajectory_generator.TrajectoryGenerator"></a>
+    <div class="doc doc-contents first">
+
+
+        <p>A class to generate an optimal trajectory that moves the crane laterally from one position to another one.</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.trajectory_generator.TrajectoryGenerator.__init__" class="doc doc-heading">
+            <code class="highlight language-python">__init__(properties_file)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize a TrajectoryGenerator instance.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>properties_file</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>path to a properties file containing problem details.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.trajectory_generator.TrajectoryGenerator.generateTrajectory" class="doc doc-heading">
+            <code class="highlight language-python">generateTrajectory(start, stop)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generates an optimal, monotone trajectory from start to stop,
+adhering to the limits imposed by the configurationfile used
+to create the TrajectoryGenerator</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>start</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>start position of the trajectory</p>
+              </div>
+            </li>
+            <li>
+              <b><code>stop</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>stop position of the trajectory</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>              –
+              <div class="doc-md-description">
+                <p>tuple (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas) where
+ts      : sample times of solution  [s]
+xs      : positions of solution     [m]
+dxs     : velocity of solution      [m/s]
+ddxs    : acceleration of solution  [m/s^2]
+thetas  : angular position of solution  [rad]
+dthetas : angular velocity of solution  [rad/s]
+ddthetas: angular acceleration of solution  [rad/s^2]</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.trajectory_generator.TrajectoryGenerator.generateTrajectoryLQR" class="doc doc-heading">
+            <code class="highlight language-python">generateTrajectoryLQR(start, stop)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generates an optimal trajectory using a Linear Quadratic Regulator</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>start</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>Start position</p>
+              </div>
+            </li>
+            <li>
+              <b><code>stop</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>Stop position</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>              –
+              <div class="doc-md-description">
+                <p>tuple (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas) where
+ts      : sample times of solution  [s]
+xs      : positions of solution     [m]
+dxs     : velocity of solution      [m/s]
+ddxs    : acceleration of solution  [m/s^2]
+thetas  : angular position of solution  [rad]
+dthetas : angular velocity of solution  [rad/s]
+ddthetas: angular acceleration of solution  [rad/s^2]</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.trajectory_generator.TrajectoryGenerator.saveDataToMat" class="doc doc-heading">
+            <code class="highlight language-python">saveDataToMat(filename, data, keys)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Save output to a .mat file.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>filename</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>The filename</p>
+              </div>
+            </li>
+            <li>
+              <b><code>data</code></b>
+                  (<code>tuple</code>)
+              –
+              <div class="doc-md-description">
+                <p>data as returned by the trajectory generation methods.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>keys</code></b>
+                  (<code>list</code>)
+              –
+              <div class="doc-md-description">
+                <p>list of keys to use.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.trajectory_generator.TrajectoryGenerator.saveParamToMat" class="doc doc-heading">
+            <code class="highlight language-python">saveParamToMat(filename)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Save the parameters of this current trajectory generator to a mat
+file.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>filename</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>The filename.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.trajectory_generator.TrajectoryGenerator.saveToCSV" class="doc doc-heading">
+            <code class="highlight language-python">saveToCSV(filename, data, columnnames)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Save output to CSV file.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>filename</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>The filename.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>data</code></b>
+                  (<code>tuple</code>)
+              –
+              <div class="doc-md-description">
+                <p>data as returned by the trajectory generation methods.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>columnnames</code></b>
+                  (<code>list</code>)
+              –
+              <div class="doc-md-description">
+                <p>list of columnnames.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="gantry_controller">gantry_controller</h2>
+<h2 id="gantrycontroller">GantryController</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="gantrylib.gantry_controller.GantryController"></a>
+    <div class="doc doc-contents first">
+
+
+        <p>A class representing a controller for the gantry crane</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.__enter__" class="doc doc-heading">
+            <code class="highlight language-python">__enter__()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Enter the runtime context of the gantry controller.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>GantryController</code></b>              –
+              <div class="doc-md-description">
+                <p>The instance of the GantryController</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.__exit__" class="doc doc-heading">
+            <code class="highlight language-python">__exit__(exc_type, exc_value, traceback)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Exit the runtime context and clean up resources</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>exc_type</code></b>
+                  (<code>Type[BaseException] or None</code>)
+              –
+              <div class="doc-md-description">
+                <p>The type of the exception if one was raised, else None.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>exc_value</code></b>
+                  (<code>BaseException or None</code>)
+              –
+              <div class="doc-md-description">
+                <p>The exception instance if one was raised, else None.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>traceback</code></b>
+                  (<code>TracebackType or None</code>)
+              –
+              <div class="doc-md-description">
+                <p>The traceback object if an exception was raised, else None.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.__init__" class="doc doc-heading">
+            <code class="highlight language-python">__init__(properties_file)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize a GantryController instance</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>properties_file</code></b>
+                  (<code>string</code>)
+              –
+              <div class="doc-md-description">
+                <p>path to a properties file that holds details of the gantrycrane.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.connectToCrane" class="doc doc-heading">
+            <code class="highlight language-python">connectToCrane()</code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Method to connect to the gantry crane.</p>
+<p>This method must be implemented by subclasses to define how to connect to a specific gantry crane.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.executeTrajectory" class="doc doc-heading">
+            <code class="highlight language-python">executeTrajectory(traj)</code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Execute a trajectory</p>
+<p>This methods must be implemented by subclasses to define how the trajectory is executed.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>traj</code></b>
+                  (<code>tuple</code>)
+              –
+              <div class="doc-md-description">
+                <p>Trajectory tuple as returned by the TrajectoryGenerator</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.generateTrajectory" class="doc doc-heading">
+            <code class="highlight language-python">generateTrajectory(start, stop, genmethod='ocp')</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate a trajectory using the trajectory generator</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>start</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>The start position of the trajectory</p>
+              </div>
+            </li>
+            <li>
+              <b><code>stop</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>The stop position of the trajectory</p>
+              </div>
+            </li>
+            <li>
+              <b><code>genmethod</code></b>
+                  (<code>str</code>, default:
+                      <code>&#39;ocp&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Method of generation, either "ocp" or "lqr". Defaults to "ocp".</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>              –
+              <div class="doc-md-description">
+                <p>Tuple containing the trajectory</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.hoist" class="doc doc-heading">
+            <code class="highlight language-python">hoist(pos)</code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Perform a hoisting movement</p>
+<p>Must be implemented by subclasses.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>pos</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>The target height</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.moveTrajectoryWithoutLog" class="doc doc-heading">
+            <code class="highlight language-python">moveTrajectoryWithoutLog(traj)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Move according to the given trajectory</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>traj</code></b>
+                  (<code>tuple</code>)
+              –
+              <div class="doc-md-description">
+                <p>Trajectory as returned by the trajectory generator.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>              –
+              <div class="doc-md-description">
+                <p>The measured trajectory</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.moveWithLog" class="doc doc-heading">
+            <code class="highlight language-python">moveWithLog(target, generator='ocp')</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Make a movement and log it to a database</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>target</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>target position in meters</p>
+              </div>
+            </li>
+            <li>
+              <b><code>generator</code></b>
+                  (<code>str</code>, default:
+                      <code>&#39;ocp&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Method of generation, either "ocp" or "lqr". Defaults to "ocp".</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>(                  <code>(tuple, tuple)</code>
+)              –
+              <div class="doc-md-description">
+                <p>A tuple containing the generated trajectory and the measured trajectory</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.moveWithoutLog" class="doc doc-heading">
+            <code class="highlight language-python">moveWithoutLog(target, generator='ocp')</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Make a movement but don't log it to the database</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>target</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>target position in meters</p>
+              </div>
+            </li>
+            <li>
+              <b><code>generator</code></b>
+                  (<code>str</code>, default:
+                      <code>&#39;ocp&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Method of generation, either "ocp" or "lqr". Defaults to "ocp".</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>(                  <code>(tuple, tuple)</code>
+)              –
+              <div class="doc-md-description">
+                <p>A tuple containing the generated trajectory and the measured trajectory</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.simpleMove" class="doc doc-heading">
+            <code class="highlight language-python">simpleMove(target)</code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Perform a simple lateral move without trajectory generation</p>
+<p>Must be implemented by subclasses.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>target</code></b>
+                  (<code>float</code>)
+              –
+              <div class="doc-md-description">
+                <p>The target position</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.storeMeasurement" class="doc doc-heading">
+            <code class="highlight language-python">storeMeasurement(measurement)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Store a measurement in the database</p>
+<p>measurement is assumed to be a tuple as returned by
+executeTrajectory
+format: (ts, x, v, a, theta, omega)
+ts : timestamps [datetime format]
+x : position [m]
+v : velocity [m/s]
+a : acceleration [m/s2]
+theta : angular position [rad]
+omega : angular velocity [rad/s]</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>measurement</code></b>
+                  (<code>tuple</code>)
+              –
+              <div class="doc-md-description">
+                <p>Tuple as returned by executeTrajectory</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="gantrylib.gantry_controller.GantryController.storeTrajectory" class="doc doc-heading">
+            <code class="highlight language-python">storeTrajectory(traj)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Store a trajectory in the database</p>
+<p>traj is assumed to be tuple as returned by generateTrajectory
+format: (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas)
+ts      : sample times of solution  [s]
+xs      : positions of solution     [m]
+dxs     : velocity of solution      [m/s]
+ddxs    : acceleration of solution  [m/s^2]
+thetas  : angular position of solution  [rad]
+dthetas : angular velocity of solution  [rad/s]
+ddthetas: angular acceleration of solution  [rad/s^2]
+us      : input force acting on cart [N]</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>traj</code></b>
+                  (<code>tuple</code>)
+              –
+              <div class="doc-md-description">
+                <p>Trajectory tuple as returned by the trajectory generator.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../examples/" class="btn btn-neutral float-left" title="Examples"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../about/" class="btn btn-neutral float-right" title="About">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../examples/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../about/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
