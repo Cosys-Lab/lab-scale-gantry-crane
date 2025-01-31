@@ -18,7 +18,7 @@ class TrajectoryGenerator:
         """ Initialize a TrajectoryGenerator instance.
 
         Args:
-            properties_file: path to a properties file containing problem details.
+            properties_file (string): path to a properties file containing problem details.
         """
         with open(properties_file, 'r') as f:
             props = yaml.safe_load(f)
