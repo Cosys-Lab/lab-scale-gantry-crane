@@ -1,3 +1,13 @@
+"""
+This script demonstrates how to use the TrajectoryGenerator class to generate a trajectory for a gantry crane.
+
+Usage:
+    python trajectory_generator_example.py
+
+    Author:Joost Mertens
+    Date: 2021-06-01
+"""
+
 from gantrylib.trajectory_generator import TrajectoryGenerator
 import matplotlib.pyplot as plt
 

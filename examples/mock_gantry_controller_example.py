@@ -1,6 +1,14 @@
-
-"""_summary_
 """
+This script demonstrates the MockGantryController class.
+No database writing is done in this script.
+
+Usage:
+    python physical_gantry_controller_example.py
+
+    Author:Joost Mertens
+    Date: 2021-06-01
+"""
+
 import logging
 import sys
 from matplotlib import pyplot as plt
