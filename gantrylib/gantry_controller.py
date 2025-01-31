@@ -43,6 +43,8 @@ class GantryController():
                 self.dbconn = None
             self.simulatortopic = props["simulator topic"]
             self.validatortopic = props["validator topic"]
+        
+        self.tg = TrajectoryGenerator(properties_file)
 
         self.position = 0
         if self.dbconn:
@@ -98,9 +100,10 @@ class GantryController():
         Returns:
             tuple: Tuple containing the trajectory
         """
-        # Publish the request to generate a trajectory
-        # TODO: add code to generate trajectory
-        return self.received_trajectory
+        if genmethod == 'ocp':
+            return self.tg.generateTrajectory(start, stop)
+        else:
+            return self.tg.generateTrajectoryLQR(start, stop)
 
     def moveWithLog(self, target, generator = 'ocp'):
         """Make a movement and log it to a database
@@ -149,7 +152,31 @@ class GantryController():
         Args:
             traj (tuple): Trajectory tuple as returned by the trajectory generator.
         """        
-        # TODO: add the storing code again
+        if self.dbconn:
+            # the datetime stamps in the database require at least a year,
+            # month and day, given that it's required, I might as well
+            # store the trace with an offset from now, then you know
+            # when it was generated.
+            curr_time = datetime.min
+            ts = [curr_time + timedelta(seconds=ts) for ts in traj[0]]
+            with self.dbconn.cursor() as cur:
+                # create the run
+                cur.execute("INSERT INTO \
+                            run (run_id, machine_id, starttime) \
+                            VALUES (%s, %s, %s)",
+                            (self.run, self.id, datetime.now()))
+                # insert the data into trajectory
+                with cur.copy("COPY trajectory (ts, machine_id, run_id, quantity,\
+                            value) FROM stdin") as copy:
+                    # write all quantities
+                    quantities = ['position', 'velocity', 'acceleration',\
+                                'angular position', 'angular velocity',\
+                                    'angular acceleration', 'force']
+                    for idx, qty in enumerate(quantities, 1):
+                        for (t, data) in zip(ts, traj[idx]):
+                            copy.write_row((t, self.id, self.run, qty, data))
+            # commit to database
+            self.dbconn.commit()
         return   
 
     @abstractmethod
@@ -179,7 +206,22 @@ class GantryController():
         Args:
             measurement (tuple): Tuple as returned by executeTrajectory
         """
-        # TODO: Add the storing code again
+        # returned t needs to be in datetime format for writing to database
+        t0_datetime = datetime.min
+        t = [t0_datetime + timedelta(seconds=ts) for ts in measurement[0]]
+
+        with self.dbconn.cursor() as cur:
+            # insert the data into measurement
+            with cur.copy("COPY measurement (ts, machine_id, run_id, quantity,\
+                           value) FROM stdin") as copy:
+                # write all quantities
+                quantities = ['position', 'velocity', 'acceleration', 'angular position',\
+                              'angular velocity']
+                for idx, qty in enumerate(quantities, 1):
+                    for (ts, data) in zip(t, measurement[idx]):
+                        copy.write_row((ts, self.id, self.run, qty, data))
+        # commit to database
+        self.dbconn.commit()
         return 
 
     def moveWithoutLog(self, target, generator='ocp'):
