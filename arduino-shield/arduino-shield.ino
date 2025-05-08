@@ -36,6 +36,7 @@ long prev_time = 0;
 float angle = 0;
 float angular_vel = 0;
 float angular_vel_smooth = 0;
+float wspeed = 0;
 
 // anemometer things
 int anemometer_zero = 0;
@@ -56,7 +57,8 @@ void debouncePulse();
 void pulseCheck();
 void setElectroMagnet(int onOff);
 void updateAngle();
-void printAngle();
+void printHuman();
+void printMachine();
 
 void setup() {
   Serial.begin(115200);
@@ -100,10 +102,9 @@ void loop() {
   // output at 100 Hz?
   if(millis() > prev_millis_angle+100){
     prev_millis_angle = millis();
-    printAngle();
-    float wspeed = (analogRead(ANEMOMETER_PIN) - anemometer_zero) * (32.4 - 0) / (410 - anemometer_zero) + 0;
-    Serial.print("w: ");
-    Serial.println(wspeed);
+    wspeed = (analogRead(ANEMOMETER_PIN) - anemometer_zero) * (32.4 - 0) / (410 - anemometer_zero) + 0;
+    printHuman();
+    printMachine();
   }
   
   pulseCheck();
@@ -292,11 +293,22 @@ void updateAngle(){
     }
 }
 
-void printAngle(){
+void printHuman(){
     Serial.print("A: ");
     Serial.print(angle); 
     Serial.print(",V: ");
-    Serial.println(angular_vel_smooth);
+    Serial.print(angular_vel_smooth);
+    Serial.print(",W: ");
+    Serial.println(wspeed);
+}
+
+// transmits serialized floats, as to not lose precision on other end.
+void printMachine(){
+  Serial.write(0x01); // start byte (start of heading)
+  // everything else I'm sending are characters, so this should be fine to use.
+  Serial.write((byte*) &angle, sizeof(float));
+  Serial.write((byte*) &angular_vel_smooth, sizeof(float));
+  Serial.write((byte*) &wspeed, sizeof(float));
 }
 
 // /*
