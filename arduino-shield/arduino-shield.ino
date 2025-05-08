@@ -7,6 +7,7 @@
 #define FORWARD_PIN 5
 #define BACKWARD_PIN 7
 #define ELECTROMAGNET_PIN 9
+#define ANEMOMETER_PIN A0
 
 #define DEBOUNCE_THRESHOLD 10 // Number of consecutive stable samples required
 
@@ -36,6 +37,9 @@ float angle = 0;
 float angular_vel = 0;
 float angular_vel_smooth = 0;
 
+// anemometer things
+int anemometer_zero = 0;
+
 // Function prototypes
 void setup();
 void loop();
@@ -61,8 +65,10 @@ void setup() {
   pinMode(PULSE_SENSOR_PIN, INPUT);
   pinMode(FORWARD_PIN, OUTPUT);
   pinMode(BACKWARD_PIN, OUTPUT);
-  pinMode(ELECTROMAGNET_PIN, OUTPUT);
+  pinMode(ELECTROMAGNET_PIN, OUTPUT); // important!
   setElectroMagnet(0);
+  pinMode(ANEMOMETER_PIN, INPUT);
+  anemometer_zero = analogRead(ANEMOMETER_PIN); // zero reading (make sure no wind is there at bootup!)
 
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(START_SENSOR_PIN), startSensorISR, FALLING);
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(END_SENSOR_PIN), stopSensorISR, FALLING);
@@ -93,8 +99,11 @@ void loop() {
   updateAngle();
   // output at 100 Hz?
   if(millis() > prev_millis_angle+100){
-    printAngle();
     prev_millis_angle = millis();
+    printAngle();
+    float wspeed = (analogRead(ANEMOMETER_PIN) - anemometer_zero) * (32.4 - 0) / (410 - anemometer_zero) + 0;
+    Serial.print("w: ");
+    Serial.println(wspeed);
   }
   
   pulseCheck();
