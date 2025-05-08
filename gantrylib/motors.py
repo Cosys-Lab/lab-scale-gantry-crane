@@ -108,6 +108,14 @@ class Motor(metaclass=ABCMeta):
         """
         return self.board.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True)
 
+    def getVelocityCms(self):
+        """Get the current velocity in cm/s.
+
+        Returns:
+            float: The current velocity in cm/s.
+        """
+        return self.getVelocity()/self.mm_to_counts/self.mm_s_to_rpm
+
     def getPosition(self):
         """Get the current position.
 
@@ -115,6 +123,14 @@ class Motor(metaclass=ABCMeta):
             int: The current position
         """
         return self.board.read_register(self.mc.REG.PID_POSITION_ACTUAL, signed=True)
+    
+    def getPositionCm(self):
+        """Get the current position in cm.
+
+        Returns:
+            float: The current position in cm.
+        """
+        return self.getPosition()/self.mm_to_counts
 
     def setLimits(self, acc, vel):
         """Set acceleration and velocity limits.
@@ -151,12 +167,23 @@ class Motor(metaclass=ABCMeta):
         self.board.write_register(self.mc.REG.PID_POSITION_TARGET, int(pos))
 
     def setVelocity(self, vel):
-        """Set the current velocity
-
-        Args:
-            vel: The current velocity.
-        """
         self.board.write_register(self.mc.REG.PID_VELOCITY_TARGET, int(vel))
+
+    def moveVelocity(self, vel):
+        """Move the motor with a given velocity."""
+        self.setVelocityMode()
+        self.resetLimits()
+        self.setVelocity(vel)
+
+    def movePosition(self, pos, vel = 2000):
+        """Move the motor to a given position."""
+        self.setPositionMode()
+        self.resetLimits()
+        self.setPosition(pos)
+
+    def resetLimits(self):
+        self.setAccelLimit(2147483647)
+        self.setVelocityLimit(2000)
 
 class Stepper(Motor, metaclass=ABCMeta):
     """Specialization of the Motor class into a Stepper motor."""
@@ -349,6 +376,7 @@ class GantryStepper(Stepper):
         # Note on the swith to torque mode: after the calibration I switch the controller to
         # torque mode and wait a bit for the target to settle.
         # I found that if I don't do this, the motor does a jerky movement when enabling velocity/position mode
+        self.calibrated = True
 
     def _testMove(self):
         """Perform a test movement.

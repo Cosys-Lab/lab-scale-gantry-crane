@@ -508,8 +508,8 @@ class PhysicalGantryController(GantryController):
             # machine identification in database
             gantryPort = props["gantryPort"]
             hoistPort = props["hoistPort"]
-            # angleUARTPort = props["angleUARTPort"]
-            angleUARTPort = None
+            angleUARTPort = props["angleUARTPort"]
+            # angleUARTPort = None
             # gantryUARTPort = props["gantryUARTPort"]
             gantryUARTPort = None
             calibrated = props["calibrated"]

@@ -46,13 +46,13 @@ reliability metric: 1
 # Acceptance criteria (unsure if they need to be hardcoded here.)
 
 # ports
-angleUARTPort: COM9
+angleUARTPort: COM6
 # gantryUARTPort: COM10
-gantryPort: COM11
-hoistPort: COM10
+gantryPort: COM8
+hoistPort: COM7
 
 # printer calibration state
 # when assumed false, the X axis needs homing. 
 # Y axis needs manual calibration to zero position.
 # code should put calibrated to true once it's done.
-calibrated: False
+calibrated: True

@@ -1,6 +1,7 @@
 # class for the tmc4671 based crane
 # based on stepper_config.py
 
+import struct
 import time
 import numpy as np
 from gantrylib.motors import GantryStepper, HoistStepper
@@ -41,14 +42,22 @@ class Crane:
             self.angleUART = None
 
         # angle pattern regex
-        self.pattern = re.compile(r"(-?\d*\.\d*) (-?\d*\.\d*)\r\n")
+        # self.pattern = re.compile(r"(-?\d*\.\d*) (-?\d*\.\d*) (-?\d*\.\d*)\r\n")
+        self.pattern = re.compile(b'\x01(.{12})') # new pattern for bytearrays and uncompressed floats.
+        self.packet_size = 13
+        self.start_byte = 0x01
 
         # last angle
         self.lastAngle = 0
         self.lastAccel = 0
         self.lastOmega = 0
+        self.lastwindspeed = 0
 
-        self.buffer = ""
+        #self.buffer = ""
+        self.buffer = bytearray(b'')
+
+        self.angleZero = 0
+        self.windZero = 0
 
     def __enter__(self):
         """Enter the runtime context for the crane.
@@ -213,16 +222,27 @@ class Crane:
         while(round(self.gantryStepper.getPosition(), -2) != 0 and round(self.gantryStepper.getPosition(), -2) !=0 and time.time() - start < 20):
             pass
 
-    def homeGantry(self):
+    def homeCart(self):
         """Homes the cart on the gantry
         """
-        self.gantryStepper.setPositionMode()
-        self.gantryStepper.setPosition(0)
-        self.gantryStepper.setLimits(acc=2147483647, vel=420)
+        if self.gantryStepper.calibrated:
+            logging.info("Homing gantry")
+            self.gantryStepper.setPositionMode()
+            self.gantryStepper.setPosition(0)
+            self.gantryStepper.setLimits(acc=2147483647, vel=420)
 
-        start = time.time()
-        while(round(self.gantryStepper.getPosition(), -2) != 0 and time.time() - start < 20):
-            pass
+            start = time.time()
+            while(round(self.gantryStepper.getPosition(), -2) != 0 and time.time() - start < 20):
+                pass
+            logging.info("Cart homed")
+        else:
+            self.gantryStepper._homeAndCalibrate()
+    
+    def homeHoist(self):
+        logging.info("Homing hoist")
+        # can't really home the hoist in closed loop mode, so do so with calbrate function.
+        self.hoistStepper._homeAndCalibrate()
+        logging.info("Hoist homed")
     
     def readAngle(self):
         """Reads the latest received angle from the angleUART
@@ -232,30 +252,54 @@ class Crane:
         """
         if self.angleUART is not None:
             # Add incoming data to the buffer
-            self.buffer += self.angleUART.read(self.angleUART.in_waiting).decode('utf-8')
+            self.buffer += bytearray(self.angleUART.read(self.angleUART.in_waiting))
 
-            # Find all matches in the buffer
+            # find all matches in the buffer
             matches = self.pattern.findall(self.buffer)
 
-            # Check if a match is found
+            # check if a match was found
             if matches:
-                last_match = matches[-1]
+                # Get the last match
+                last = matches[-1]
 
-                theta = -1* float(last_match[0])
-                omega = -1* float(last_match[1])
+                # Unpack the bytes into floats
+                floats = struct.unpack('<fff', last)
 
-                # Remove the parsed data from the buffer, keep only the last (unparsed) part
-                self.buffer = self.buffer.split(last_match[2])[-1]
- 
-                self.lastAngle = theta # * 1/0.76023946 scale factor that might be needed
-                self.lastOmega = omega
-                return theta, omega
+                # Remove the processed bytes from the buffer
+                self.buffer = self.buffer.split(last)[-1]
+                self.lastAngle = floats[0] - self.angleZero
+                self.lastOmega = floats[1]
+                self.lastwindspeed = floats[2] - self.windZero
+                return self.lastAngle, self.lastOmega, self.lastwindspeed
             else:
-                # No match found, return None
-                logging.info("no match, returning previous values")
-                return self.lastAngle, self.lastOmega
+                return self.lastAngle, self.lastOmega, self.lastwindspeed
         else:
-            return (0, 0)
+            return (0, 0, 0)
+        
+    def moveCartVelocity(self, velocity):
+        self.gantryStepper.moveVelocity(velocity)
+
+    def moveHoistVelocity(self, velocity):
+        self.hoistStepper.moveVelocity(velocity)
+
+    def moveCartPosition(self, position, velocity):
+        self.gantryStepper.movePosition(position, velocity)
+
+    def zeroWind(self):
+        _, _, windspeed = self.readAngle()
+        self.windZero = windspeed + self.windZero
+
+    def zeroAngle(self):
+        angle, _, _ = self.readAngle()
+        self.angleZero = angle + self.angleZero
+
+    def getState(self):
+        x_cart = self.gantryStepper.getPositionCm()
+        v_cart = self.gantryStepper.getVelocityCms()
+        x_hoist = self.hoistStepper.getPositionCm()
+        v_hoist = self.hoistStepper.getVelocityCms()
+        (theta, omega, wspeed) = self.readAngle()
+        return (x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed)
 
 
 class Waypoint():

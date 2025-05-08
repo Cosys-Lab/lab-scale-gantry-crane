@@ -1,8 +1,11 @@
+import logging
 import tkinter as tk
 from tkinter import ttk
 import sys
 import threading
 import time
+
+from gantrylib.gantry_controller import MockGantryController, PhysicalGantryController
 
 class StdoutRedirector:
     def __init__(self, text_widget):
@@ -15,10 +18,26 @@ class StdoutRedirector:
     def flush(self):
         pass
 
+class TextWidgetHandler(logging.Handler):
+    def __init__(self, text_widget):
+        super().__init__()
+        self.text_widget = text_widget
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.text_widget.after(0, self.write_message, msg)
+
+    def write_message(self, msg):
+        self.text_widget.insert(tk.END, msg + '\n')
+        self.text_widget.see(tk.END)
+
 class MotionGUI:
-    def __init__(self, root):
+    def __init__(self, root, crane_controller):
         self.root = root
         self.root.title("Motion Control GUI")
+
+        self.crane_controller = crane_controller
+        self.crane = crane_controller.crane
 
         # Configure top-level grid for responsiveness
         self.root.grid_rowconfigure(2, weight=1)
@@ -27,7 +46,7 @@ class MotionGUI:
         # Velocity state
         self.vel_x = tk.DoubleVar()
         self.vel_y = tk.DoubleVar()
-        self.extra_velocity = tk.DoubleVar()
+        self.pos_move_vel = tk.DoubleVar()
 
         # Top-left: Control (D-pad, Home, Status)
         control_frame = ttk.Frame(root)
@@ -80,7 +99,6 @@ class MotionGUI:
         self.current_vel = [0.0, 0.0]
 
         self.update_status()
-        self.start_status_loop()
 
     def make_dpad(self, parent):
         self.dpad_buttons = {}
@@ -98,16 +116,27 @@ class MotionGUI:
         make_button("↓", 2, 1)
 
     def move_pressed(self, direction):
-        print(f"Pressed {direction}")
+        logging.info(f"Pressed {direction}")
+        vel = self.vel_x.get() if direction in ["←", "→"] else self.vel_y.get()
+        if direction == "↑":
+            self.crane.moveHoistVelocity(-vel)
+        elif direction == "↓":
+            self.crane.moveHoistVelocity(vel)
+        elif direction == "←":
+            self.crane.moveCartVelocity(vel)
+        elif direction == "→":
+            self.crane.moveCartVelocity(-vel)
 
     def move_released(self, direction):
-        print(f"Released {direction}")
+        logging.info(f"Released {direction}")
+        self.crane.moveCartVelocity(0)
+        self.crane.moveHoistVelocity(0)
 
     def make_sliders(self, parent):
         ttk.Label(parent, text="Left-Right Velocity").pack()
-        tk.Scale(parent, from_=-10, to=10, orient="horizontal", variable=self.vel_x).pack(fill="x")
+        tk.Scale(parent, from_=10, to=2000, orient="horizontal", variable=self.vel_x).pack(fill="x")
         ttk.Label(parent, text="Up-Down Velocity").pack()
-        tk.Scale(parent, from_=-10, to=10, orient="horizontal", variable=self.vel_y).pack(fill="x")
+        tk.Scale(parent, from_=1, to=100, orient="horizontal", variable=self.vel_y).pack(fill="x")
 
     def make_position_controls(self, parent):
         parent.grid_columnconfigure(4, weight=1)
@@ -122,28 +151,30 @@ class MotionGUI:
         self.stop_btn.grid(row=0, column=2, padx=5)
 
         self.move_type = tk.BooleanVar(value=False)
-        self.toggle = ttk.Checkbutton(parent, text="Toggle Type", variable=self.move_type, command=self.toggle_changed)
-        self.toggle.grid(row=0, column=3, padx=5)
+        self.opti_move_toggle = ttk.Checkbutton(parent, text="Optimal Move", variable=self.move_type, command=self.toggle_changed)
+        self.opti_move_toggle.grid(row=0, column=3, padx=5)
 
         # Additional velocity slider, only for Type A
-        self.extra_slider = tk.Scale(parent, from_=0, to=10, orient="horizontal", variable=self.extra_velocity,
-                                     label="Extra Velocity")
-        self.extra_slider.grid(row=0, column=4, sticky="ew", padx=10)
+        self.pos_move_velocity_slider = tk.Scale(parent, from_=10, to=2000, orient="horizontal", variable=self.pos_move_vel,
+                                     label="Movement Velocity")
+        self.pos_move_velocity_slider.grid(row=0, column=4, sticky="ew", padx=10)
         self.toggle_changed()  # Set initial state
 
     def toggle_changed(self):
-        if self.move_type.get():  # Type B
-            self.extra_slider.config(state="disabled")
-        else:  # Type A
-            self.extra_slider.config(state="normal")
+        if self.move_type.get():  # Optimal move
+            logging.info(f"Optimal Move:{self.move_type.get()}")
+            self.pos_move_velocity_slider.config(state="disabled")
+        else:  # Optimal move
+            logging.info(f"Optimal Move:{self.move_type.get()}")
+            self.pos_move_velocity_slider.config(state="normal")
 
     def make_home_buttons(self, parent):
-        tk.Button(parent, text="Home X", command=self.home_x).pack(padx=5, pady=5, fill="x")
-        tk.Button(parent, text="Home Y", command=self.home_y).pack(padx=5, pady=5, fill="x")
+        tk.Button(parent, text="Home Cart", command=self.home_cart).pack(padx=5, pady=5, fill="x")
+        tk.Button(parent, text="Home Hoist", command=self.home_hoist).pack(padx=5, pady=5, fill="x")
 
     def make_zero_buttons(self, parent):
-        tk.Button(parent, text="Zero Angle", command=self.home_x).pack(padx=5, pady=5, fill="x")
-        tk.Button(parent, text="Zero Wind", command=self.home_y).pack(padx=5, pady=5, fill="x")
+        tk.Button(parent, text="Zero Angle", command=self.zero_angle).pack(padx=5, pady=5, fill="x")
+        tk.Button(parent, text="Zero Wind", command=self.zero_wind).pack(padx=5, pady=5, fill="x")
 
     def make_status_display(self, parent):
         self.status_header = ttk.Label(parent, text="\t(Pos, Vel)")
@@ -163,39 +194,63 @@ class MotionGUI:
         scrollbar = tk.Scrollbar(parent, command=self.stdout_text.yview)
         scrollbar.grid(row=0, column=1, sticky="ns")
         self.stdout_text.config(yscrollcommand=scrollbar.set)
+        # Optional: still redirect print() if you want
         sys.stdout = StdoutRedirector(self.stdout_text)
 
+        # Add logging handler
+        log_handler = TextWidgetHandler(self.stdout_text)
+        log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+        logger.addHandler(log_handler)
+
+
     def update_status(self):
-        self.current_vel = [self.vel_x.get(), self.vel_y.get()]
-        self.current_pos[0] += self.current_vel[0] / 60.0
-        self.current_pos[1] += self.current_vel[1] / 60.0
-
-        self.cart_label.config(text=f"Position: ({self.current_pos[0]:.2f}, {self.current_pos[1]:.2f})")
-        self.hoist_label.config(text=f"Velocity: ({self.current_vel[0]:.2f}, {self.current_vel[1]:.2f})")
-
-    def start_status_loop(self):
-        def loop():
-            while True:
-                self.update_status()
-                time.sleep(1 / 60)
-        threading.Thread(target=loop, daemon=True).start()
+        (cart_pos, cart_vel, hoist_pos, hoist_vel, angle_pos, angle_vel, wind_vel) = self.crane.getState()
+        self.cart_label.config(text=f"Cart:\t({cart_pos:.2f}, {cart_vel:.2f})")
+        self.hoist_label.config(text=f"Hoist:\t({hoist_pos:.2f}, {hoist_vel:.2f})")
+        self.angle_label.config(text=f"Angle:\t({angle_pos:.2f}, {angle_vel:.2f})")
+        self.wind_label.config(text=f"Wind:\t(n/a, {wind_vel:.2f})")
+        self.root.after(60, self.update_status)
 
     def start_movement(self):
-        pos = self.pos_entry.get()
-        mode = "Type B" if self.move_type.get() else "Type A"
-        extra_vel = self.extra_velocity.get() if not self.move_type.get() else "N/A"
-        print(f"Start moving to position {pos} with mode {mode}, extra velocity {extra_vel}")
+        logging.info("Start pressed")
+        pos = float(self.pos_entry.get())
+        if pos < 0 or pos > 0.45:
+            logging.error("Error: Position out of range [0, 0.45]")
+            self.pos_entry.delete(0, tk.END)
+            return
+        else:
+            if self.move_type.get():
+                logging.info(f"Performing optimal move to {pos}")
+                self.crane_controller.moveWithoutLog(pos)
+            else:
+                vel = self.pos_move_velocity_slider.get()
+                logging.info(f"Performing normal move to {pos} with velocity {vel}")
+                self.crane.moveCartPosition(pos, vel)
 
     def stop_movement(self):
-        print("Stop movement")
+        logging.info("Stop pressed")
 
-    def home_x(self):
-        print("Homing X axis")
+    def home_cart(self):
+        logging.info("Home Cart pressed")
+        self.crane.homeCart()
 
-    def home_y(self):
-        print("Homing Y axis")
+    def home_hoist(self):
+        logging.info("Home Hoist pressed")
+        self.crane.homeHoist()
+
+    def zero_angle(self):
+        logging.info("Zero Angle pressed")
+        self.crane.zeroAngle()
+
+    def zero_wind(self):
+        logging.info("Zero Wind pressed")
+        self.crane.zeroWind()
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = MotionGUI(root)
-    root.mainloop()
+    with PhysicalGantryController("../examples/crane-properties.yaml") as crane_controller:
+        app = MotionGUI(root, crane_controller)
+        root.mainloop()
