@@ -47,6 +47,7 @@ class MotionGUI:
         self.vel_x = tk.DoubleVar()
         self.vel_y = tk.DoubleVar()
         self.pos_move_vel = tk.DoubleVar()
+        self.hoist_pos_move_vel = tk.DoubleVar()
 
         # Top-left: Control (D-pad, Home, Status)
         control_frame = ttk.Frame(root)
@@ -73,12 +74,26 @@ class MotionGUI:
 
         self.make_status_display(status_frame)
 
-        # Right side: Velocity sliders
-        slider_frame = ttk.LabelFrame(root, text="Velocity Control")
-        slider_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-        slider_frame.grid_columnconfigure(0, weight=1)
+        # Right-hand container
+        right_frame = ttk.Frame(root)
+        right_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        right_frame.grid_rowconfigure(1, weight=1)
+        right_frame.grid_columnconfigure(0, weight=1)
 
+        # Velocity Control section
+        slider_frame = ttk.LabelFrame(right_frame, text="Velocity Control")
+        slider_frame.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         self.make_sliders(slider_frame)
+
+        # Writeout Frame below the sliders, in right_frame
+        writeout_frame = ttk.LabelFrame(right_frame, text="Writeout")
+        writeout_frame.grid(row=1, column=0, sticky="nsew", padx=0, pady=5)
+
+        self.write_to_db = tk.BooleanVar()
+        self.validate_results = tk.BooleanVar()
+
+        ttk.Checkbutton(writeout_frame, text="Write to database", variable=self.write_to_db).pack(anchor="w", padx=10, pady=2)
+        ttk.Checkbutton(writeout_frame, text="Validate results", variable=self.validate_results).pack(anchor="w", padx=10, pady=2)
 
         # Movement control row
         pos_frame = ttk.LabelFrame(root, text="Movement Control")
@@ -133,32 +148,57 @@ class MotionGUI:
         self.crane.moveHoistVelocity(0)
 
     def make_sliders(self, parent):
-        ttk.Label(parent, text="Left-Right Velocity").pack()
-        tk.Scale(parent, from_=10, to=2000, orient="horizontal", variable=self.vel_x).pack(fill="x")
-        ttk.Label(parent, text="Up-Down Velocity").pack()
-        tk.Scale(parent, from_=1, to=100, orient="horizontal", variable=self.vel_y).pack(fill="x")
+        ttk.Label(parent, text="Left-Right Velocity").pack(anchor="w", padx=5, pady=(5, 0))
+        tk.Scale(parent, from_=10, to=2000, orient="horizontal", variable=self.vel_x).pack(fill="x", padx=5, pady=2)
+        self.vel_x.set(200)
+
+        ttk.Label(parent, text="Up-Down Velocity").pack(anchor="w", padx=5, pady=(10, 0))
+        tk.Scale(parent, from_=1, to=100, orient="horizontal", variable=self.vel_y).pack(fill="x", padx=5, pady=2)
+        self.vel_y.set(50)
+
 
     def make_position_controls(self, parent):
-        parent.grid_columnconfigure(4, weight=1)
+        parent.grid_columnconfigure(5, weight=1)  # Increase column count to accommodate new labels
+
+        # Row 0 - Cart Controls
+        tk.Label(parent, text="Cart:").grid(row=0, column=0, padx=5, sticky="w")
 
         self.pos_entry = tk.Entry(parent)
-        self.pos_entry.grid(row=0, column=0, padx=5, sticky="ew")
+        self.pos_entry.grid(row=0, column=1, padx=5, sticky="ew")
 
         self.start_btn = tk.Button(parent, text="Start", command=self.start_movement)
-        self.start_btn.grid(row=0, column=1, padx=5)
+        self.start_btn.grid(row=0, column=2, padx=5)
 
         self.stop_btn = tk.Button(parent, text="Stop", command=self.stop_movement)
-        self.stop_btn.grid(row=0, column=2, padx=5)
+        self.stop_btn.grid(row=0, column=3, padx=5)
 
         self.move_type = tk.BooleanVar(value=False)
         self.opti_move_toggle = ttk.Checkbutton(parent, text="Optimal Move", variable=self.move_type, command=self.toggle_changed)
-        self.opti_move_toggle.grid(row=0, column=3, padx=5)
+        self.opti_move_toggle.grid(row=0, column=4, padx=5)
 
-        # Additional velocity slider, only for Type A
         self.pos_move_velocity_slider = tk.Scale(parent, from_=10, to=2000, orient="horizontal", variable=self.pos_move_vel,
-                                     label="Movement Velocity")
-        self.pos_move_velocity_slider.grid(row=0, column=4, sticky="ew", padx=10)
+                                    label="Movement Velocity")
+        self.pos_move_velocity_slider.grid(row=0, column=5, sticky="ew", padx=10)
+        self.pos_move_vel.set(200)
         self.toggle_changed()  # Set initial state
+
+        # Row 1 - Hoist Controls
+        tk.Label(parent, text="Hoist:").grid(row=1, column=0, padx=5, sticky="w")
+
+        self.hoist_pos_entry = tk.Entry(parent)
+        self.hoist_pos_entry.grid(row=1, column=1, padx=5, sticky="ew")
+
+        self.hoist_start_btn = tk.Button(parent, text="Start", command=self.start_hoist_movement)
+        self.hoist_start_btn.grid(row=1, column=2, padx=5)
+
+        self.hoist_stop_btn = tk.Button(parent, text="Stop", command=self.stop_movement)
+        self.hoist_stop_btn.grid(row=1, column=3, padx=5)
+
+        self.hoist_pos_move_velocity_slider = tk.Scale(parent, from_=10, to=100, orient="horizontal", variable=self.hoist_pos_move_vel,
+                                    label="Hoist Velocity")
+        self.hoist_pos_move_velocity_slider.grid(row=1, column=5, sticky="ew", padx=10)
+        self.hoist_pos_move_vel.set(50)
+
 
     def toggle_changed(self):
         if self.move_type.get():  # Optimal move
@@ -183,10 +223,21 @@ class MotionGUI:
         self.cart_label.pack(anchor="w", padx=5, pady=2)
         self.hoist_label = ttk.Label(parent, text="Hoist:\t(0.0, 0.0)")
         self.hoist_label.pack(anchor="w", padx=5, pady=2)
-        self.angle_label = ttk.Label(parent, text="Angle:\t(0.0, 0.0)")
-        self.angle_label.pack(anchor="w", padx=5, pady=2)
-        self.wind_label = ttk.Label(parent, text="Wind:\t(n/a, 0.0)")
-        self.wind_label.pack(anchor="w", padx=5, pady=2)
+
+        angle_frame = ttk.Frame(parent)
+        angle_frame.pack(anchor="w", padx=5, pady=2, fill="x")
+        self.angle_label = ttk.Label(angle_frame, text="Angle:\t(0.0, 0.0)")
+        self.angle_label.pack(side="left")
+        self.angle_validity = ttk.Label(angle_frame, text="\tValid", foreground="green")
+        self.angle_validity.pack(side="right", padx=10)
+
+        wind_frame = ttk.Frame(parent)
+        wind_frame.pack(anchor="w", padx=5, pady=2, fill="x")
+        self.wind_label = ttk.Label(wind_frame, text="Wind:\t(n/a, 0.0)")
+        self.wind_label.pack(side="left")
+        self.wind_validity = ttk.Label(wind_frame, text="\tValid", foreground="green")
+        self.wind_validity.pack(side="right", padx=10)
+
 
     def make_stdout_display(self, parent):
         self.stdout_text = tk.Text(parent, height=10, wrap="word")
@@ -208,23 +259,39 @@ class MotionGUI:
 
     def update_status(self):
         (cart_pos, cart_vel, hoist_pos, hoist_vel, angle_pos, angle_vel, wind_vel) = self.crane.getState()
+
         self.cart_label.config(text=f"Cart:\t({cart_pos:.2f}, {cart_vel:.2f})")
         self.hoist_label.config(text=f"Hoist:\t({hoist_pos:.2f}, {hoist_vel:.2f})")
         self.angle_label.config(text=f"Angle:\t({angle_pos:.2f}, {angle_vel:.2f})")
         self.wind_label.config(text=f"Wind:\t(n/a, {wind_vel:.2f})")
+
+        # Validity for angle
+        if abs(angle_pos) < 45.0:
+            self.angle_validity.config(text="Valid", foreground="green")
+        else:
+            self.angle_validity.config(text="Invalid", foreground="red")
+
+        # Validity for wind
+        if abs(wind_vel) < 2.0:
+            self.wind_validity.config(text="Valid", foreground="green")
+        else:
+            self.wind_validity.config(text="Invalid", foreground="red")
+
         self.root.after(60, self.update_status)
 
     def start_movement(self):
         logging.info("Start pressed")
         pos = float(self.pos_entry.get())
-        if pos < 0 or pos > 0.45:
-            logging.error("Error: Position out of range [0, 0.45]")
+        if pos < 0 or pos > 0.42:
+            logging.error("Error: Position out of range [0, 0.42]")
             self.pos_entry.delete(0, tk.END)
             return
         else:
             if self.move_type.get():
                 logging.info(f"Performing optimal move to {pos}")
-                self.crane_controller.moveWithoutLog(pos)
+                self.crane_controller.moveOptimally(pos, 
+                                    write_to_db=self.write_to_db.get(), 
+                                    validate=self.validate_results.get())
             else:
                 vel = self.pos_move_velocity_slider.get()
                 logging.info(f"Performing normal move to {pos} with velocity {vel}")
@@ -232,6 +299,8 @@ class MotionGUI:
 
     def stop_movement(self):
         logging.info("Stop pressed")
+        self.crane.moveCartVelocity(0)
+        self.crane.moveHoistVelocity(0)
 
     def home_cart(self):
         logging.info("Home Cart pressed")
@@ -248,6 +317,19 @@ class MotionGUI:
     def zero_wind(self):
         logging.info("Zero Wind pressed")
         self.crane.zeroWind()
+
+    def start_hoist_movement(self):
+        logging.info("Start Hoist pressed")
+        pos = float(self.hoist_pos_entry.get())
+        if pos < 0 or pos > 0.24:
+            logging.error("Error: Position out of range [0, 0.24]")
+            self.hoist_pos_entry.delete(0, tk.END)
+            return
+        else:
+            vel = self.hoist_pos_move_velocity_slider.get()
+            logging.info(f"Performing normal hoist move to {pos} with velocity {vel}")
+            self.crane.moveHoistPosition(pos, vel)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
