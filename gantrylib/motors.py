@@ -1,3 +1,4 @@
+import logging
 import time
 from abc import ABCMeta, abstractmethod
 from pytrinamic.evalboards import TMC4671_eval
@@ -108,7 +109,7 @@ class Motor(metaclass=ABCMeta):
         """
         return self.board.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True)
 
-    def getVelocityCms(self):
+    def getVelocityMms(self):
         """Get the current velocity in cm/s.
 
         Returns:
@@ -124,13 +125,13 @@ class Motor(metaclass=ABCMeta):
         """
         return self.board.read_register(self.mc.REG.PID_POSITION_ACTUAL, signed=True)
     
-    def getPositionCm(self):
+    def getPositionMm(self):
         """Get the current position in cm.
 
         Returns:
             float: The current position in cm.
         """
-        return self.getPosition()/self.mm_to_counts
+        return (self.getPosition())/self.mm_to_counts
 
     def setLimits(self, acc, vel):
         """Set acceleration and velocity limits.
@@ -179,6 +180,7 @@ class Motor(metaclass=ABCMeta):
         """Move the motor to a given position."""
         self.setPositionMode()
         self.resetLimits()
+        self.setVelocityLimit(vel)
         self.setPosition(pos)
 
     def resetLimits(self):
@@ -259,25 +261,26 @@ class GantryStepper(Stepper):
         self._PIConfig()
         self._feedbackSelection()
 
+        self.calibrated = calibrated
         if not calibrated:
             self._homeAndCalibrate()
-        else:
-            self.setPositionMode()
-            print("current position:", self.getPosition())
-            print("setting position to 0")
-            while(round(self.getPosition(),-2) !=0):
-                self.setPosition(0)
-                time.sleep(4)
-            print("current position:", self.getPosition())
-            if round(self.getPosition(), -2) != 0:
-                # if position mode homing somehow didn't work we can try velocity homing
-                self.setVelocityMode()
-                self.setVelocity(-20)
-                time.sleep(0.1)
-                start = time.now()
-                while(round(abs(self.getVelocity())) > 2 and time.now()-start < 4):
-                    pass
-                print("position homing failed, velocity homing yielded position", self.getPosition())
+        # else:
+        #     self.setPositionMode()
+        #     print("current position:", self.getPosition())
+        #     print("setting position to 0")
+        #     while(round(self.getPosition(),-2) !=0):
+        #         self.setPosition(0)
+        #         time.sleep(4)
+        #     print("current position:", self.getPosition())
+        #     if round(self.getPosition(), -2) != 0:
+        #         # if position mode homing somehow didn't work we can try velocity homing
+        #         self.setVelocityMode()
+        #         self.setVelocity(-20)
+        #         time.sleep(0.1)
+        #         start = time.now()
+        #         while(round(abs(self.getVelocity())) > 2 and time.now()-start < 4):
+        #             pass
+        #         print("position homing failed, velocity homing yielded position", self.getPosition())
 
     def _ADCConfig(self):
         """Configure the ADC.
@@ -292,8 +295,8 @@ class GantryStepper(Stepper):
         super()._limitConfig()
         # Limits
         self.board.write_register(self.mc.REG.PID_POSITION_LIMIT_LOW, 0)
-        # 650mm /40mm per revolution * 65536 pulses per revolution
-        self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 1064960)
+        # 440mm /40mm per revolution * 65536 pulses per revolution
+        self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 720896)
 
     def _PIConfig(self):
         """Configure the PI controller.
@@ -438,7 +441,8 @@ class HoistStepper(Stepper):
         super()._limitConfig()
         self.board.write_register(self.mc.REG.PID_POSITION_LIMIT_LOW, 0)
         # self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 458752) # 7 rotations
-        self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 458752) # 4 rotations
+        # 240mm /65.92mm per revolution * 65536 pulses per revolution
+        self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 238530) # 4 rotations
         self.board.write_register(self.mc.REG.PID_VELOCITY_LIMIT, 50)
 
     def _PIConfig(self):
@@ -502,7 +506,7 @@ class HoistStepper(Stepper):
         # user intervention is needed here.
 
         input("Hoist ready for zeroing, please manually put the hoist to the zero position and confirm with enter")
-        self.board.write_register(self.mc.REG.PID_POSITION_ACTUAL, 458740)
+        self.board.write_register(self.mc.REG.PID_POSITION_ACTUAL, 238530)
         self.board.write_register(self.mc.REG.MODE_RAMP_MODE_MOTION, self.mc.ENUM.MOTION_MODE_POSITION)
         # assuming user has properly set actual position
         # top of container is at 150 cm, but center of mass is at 140
@@ -525,3 +529,20 @@ class HoistStepper(Stepper):
 
         # Stop
         self.board.write_register(self.mc.REG.PID_TORQUE_FLUX_TARGET, 0x00000000)
+
+    def movePosition(self, pos, vel = 2000):
+        """Move the motor to a given position."""
+        self.setPositionMode()
+        self.resetLimits()
+        self.setVelocityLimit(vel)
+        self.setPosition(-pos+238530)
+        logging.info(f"moving to position {-pos+238530}")
+        logging.info(f"actual position: {self.getPosition()}")
+
+    def getPositionMm(self):
+        """Get the current position in cm.
+
+        Returns:
+            float: The current position in cm.
+        """
+        return -(self.getPosition()-238530)/self.mm_to_counts

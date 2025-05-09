@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from os import write
 import pickle
 from threading import Event
 from typing_extensions import override
@@ -46,7 +47,6 @@ class GantryController():
         
         self.tg = TrajectoryGenerator(properties_file)
 
-        self.position = 0
         if self.dbconn:
             with self.dbconn.cursor() as cur:
                 cur.execute("SELECT MAX(run_id) FROM run WHERE machine_id = 1;")
@@ -59,6 +59,11 @@ class GantryController():
         self.repls = props["replications"]
 
         logging.info("Initialized " + str(self))
+
+        # initialize to None, PhysicalGantryController will override it.
+        # Note to self: might break mockGantryController
+        self.crane = None
+        self.position = 0
 
     def __enter__(self):
         """Enter the runtime context of the gantry controller.
@@ -100,12 +105,18 @@ class GantryController():
         Returns:
             tuple: Tuple containing the trajectory
         """
+        # retrieve rope length and configure it in the trajectory generator
+        if self.crane:
+            hoistpos = self.crane.hoistStepper.getPositionMm()
+            logging.info(f"Hoist position is {hoistpos} mm")
+            self.tg.r = (350-hoistpos)/1000
+            logging.info(f"Rope length is {self.tg.r} m")
         if genmethod == 'ocp':
             return self.tg.generateTrajectory(start, stop)
         else:
             return self.tg.generateTrajectoryLQR(start, stop)
 
-    def moveWithLog(self, target, generator = 'ocp'):
+    def moveOptimally(self, target, generator = 'ocp', write_to_db = False, validate = False):
         """Make a movement and log it to a database
 
         Args:
@@ -115,25 +126,60 @@ class GantryController():
         Returns:
             tuple(tuple, tuple): A tuple containing the generated trajectory and the measured trajectory
         """
+        if validate and not write_to_db:
+            logging.info("Validation is not possible without writing to the database. Will not perform validation.")
+
         logging.info("Generating trajectory to " + str(target))
-        traj = self.generateTrajectory(self.position, target, generator)
+        traj = self.generateTrajectory(self.crane.gantryStepper.getPositionMm()/1000, target, generator)
         sleep(1.5) # sleep needed for initialization of the Arduino
-        logging.info("Trajectory generated, storing in database")
-        self.storeTrajectory(traj)
-        logging.info("Trajectory stored, notifying simulator")
-        self.notifySimulator()
-        logging.info("Simulator notified, executing trajectory")
+        # TODO: check if the sleep is still needed? I don't think it is.
+        logging.info("Trajectory generated")
+        if write_to_db:
+            self._updateRunNumber()
+            logging.info("Run number updated to " + str(self.run))
+            # fetch run number from database
+            logging.info("Storing in database")
+            self.storeTrajectory(traj)
+            logging.info("Trajectory stored, notifying simulator")
+            self.notifySimulator()
+            logging.info("Simulator notified, executing trajectory")
+
+        if validate and write_to_db:
+            logging.info("Trajectory stored, notifying simulator")
+            self.notifySimulator()
+            logging.info("Simulator notified")
+        
+        logging.info("Executing trajectory")
         measurement = self.executeTrajectory(traj)
-        logging.info("Trajectory executed, updating position and storing measurement")
+        logging.info("Trajectory executed, updating position")
         self.position = measurement[1][-1]
         # align measurement to trajectory for storing
         measurement = self._align_measurement_to_trajectory(traj, measurement)
-        self.storeMeasurement(measurement)
-        logging.info("Measurement stored in database, notifying validator")
-        self.notifyValidator()
-        logging.info("Validator notified, finished move")
-        self.run += 1
+        
+        if write_to_db:
+            logging.info("Storing measurement in database")
+            self.storeMeasurement(measurement)
+            logging.info("Measurement stored in database")
+
+        if validate and write_to_db:
+            logging.info("notifying validator")
+            self.notifyValidator()
+            logging.info("Validator notified")
+        
+        logging.info("Trajectory executed")
         return traj, measurement
+
+    def _updateRunNumber(self):
+        if self.dbconn:
+            with self.dbconn.cursor() as cur:
+                cur.execute("SELECT MAX(run_id) FROM run WHERE machine_id = 1;")
+                try:
+                    self.run = cur.fetchall()[0][0] + 1
+                except Exception:
+                    # if an exception occurs, there simply aren't any runs yet.
+                    # so add run number 0.
+                    self.run = 0
+        return self.run
 
     def storeTrajectory(self, traj):
         """Store a trajectory in the database
@@ -224,27 +270,28 @@ class GantryController():
         self.dbconn.commit()
         return 
 
-    def moveWithoutLog(self, target, generator='ocp'):
-        """Make a movement but don't log it to the database
+    # deprecated, use moveOptimally instead
+    # def moveWithoutLog(self, target, generator='ocp'):
+    #     """Make a movement but don't log it to the database
 
-        Args:
-            target (float): target position in meters
-            generator (str, optional): Method of generation, either "ocp" or "lqr". Defaults to "ocp".
+    #     Args:
+    #         target (float): target position in meters
+    #         generator (str, optional): Method of generation, either "ocp" or "lqr". Defaults to "ocp".
 
-        Returns:
-            tuple(tuple, tuple): A tuple containing the generated trajectory and the measured trajectory
-        """
-        # generate a trajectory to executs
-        # trajectory is a tuple of shape: (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas, us)
-        traj = self.generateTrajectory(self.position, target, generator)
-        logging.info(traj)
-        # execute the trajectory
-        # measurement is a tuple of shape (t, x, v, a, theta, omega)   
-        measurement = self.executeTrajectory(traj)
-        self.position = measurement[1][-1]
-        # align measurement to trajectory for storing
-        measurement = self._align_measurement_to_trajectory(traj, measurement)
-        return traj, measurement
+    #     Returns:
+    #         tuple(tuple, tuple): A tuple containing the generated trajectory and the measured trajectory
+    #     """
+    #     # generate a trajectory to executs
+    #     # trajectory is a tuple of shape: (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas, us)
+    #     traj = self.generateTrajectory(self.crane.gantryStepper.getPositionMm()/1000, target, generator)
+    #     logging.info(traj)
+    #     # execute the trajectory
+    #     # measurement is a tuple of shape (t, x, v, a, theta, omega)   
+    #     measurement = self.executeTrajectory(traj)
+    #     self.position = measurement[1][-1]
+    #     # align measurement to trajectory for storing
+    #     measurement = self._align_measurement_to_trajectory(traj, measurement)
+    #     return traj, measurement
     
     def moveTrajectoryWithoutLog(self, traj):
         """Move according to the given trajectory
@@ -288,9 +335,14 @@ class GantryController():
 
         # Find the index of the maximum correlation
         shift_index = np.argmax(cross_corr)
+        zero_lag_index = len(trace1) - 1
+        lag = shift_index - zero_lag_index
 
-        # Calculate the time shift in samples
-        time_shift = time1[shift_index] - time1[-1]
+        # Compute time step (assumes uniform spacing)
+        dt = time1[1] - time1[0]
+
+        # Convert lag to time shift
+        time_shift = lag * dt
 
         return time_shift
     
@@ -474,6 +526,7 @@ class PhysicalGantryController(GantryController):
         """        
         super().__init__(properties_file)
         self.crane = self.connectToCrane(properties_file)
+        self.position = self.crane.gantryStepper.getPositionMm()/1000
 
     def __enter__(self):
         """Enter the runtime context of the gantry controller.

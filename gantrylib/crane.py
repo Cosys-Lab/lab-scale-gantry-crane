@@ -28,7 +28,7 @@ class Crane:
             calibrated (bool, optional): Whether the crane's motors are already calibrated or not. Defaults to False.
             I_max (int, optional): Maximal motor current. Defaults to 1A
         """
-        
+
         # create motors
         self.gantryStepper = GantryStepper(port=gantryPort, calibrated=calibrated, I_max= I_max)
         self.hoistStepper = HoistStepper(port=hoistPort, calibrated=calibrated)
@@ -110,6 +110,7 @@ class Crane:
         v = [0]
         theta = [0]
         omega_arduino = [0]
+        wspeed = [0]
         a = [0]
         wp_dt = []
         # reset angle logger input buffer
@@ -141,11 +142,12 @@ class Crane:
             #v.append(self.mc.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True))
             v.append(self.gantryStepper.getVelocity())
             dt = time.time() - tick
-            new_theta, new_omega = self.readAngle()
+            new_theta, new_omega, new_wspeed = self.readAngle()
             new_a = 0 # not measured for now.
             theta.append(new_theta)
             a.append(new_a)
             omega_arduino.append(new_omega)
+            wspeed.append(new_wspeed)
             
             #print("logging time:" +str(dt)) 
             wp_end = time.time()
@@ -283,7 +285,11 @@ class Crane:
         self.hoistStepper.moveVelocity(velocity)
 
     def moveCartPosition(self, position, velocity):
-        self.gantryStepper.movePosition(position, velocity)
+        self.gantryStepper.movePosition(position*1000*self.gantryStepper.mm_to_counts, velocity)
+
+    def moveHoistPosition(self, position, velocity):
+        logging.info(f"Hoist target position: {position*1000*self.hoistStepper.mm_to_counts}")
+        self.hoistStepper.movePosition(position*1000*self.hoistStepper.mm_to_counts, velocity)
 
     def zeroWind(self):
         _, _, windspeed = self.readAngle()
@@ -294,10 +300,10 @@ class Crane:
         self.angleZero = angle + self.angleZero
 
     def getState(self):
-        x_cart = self.gantryStepper.getPositionCm()
-        v_cart = self.gantryStepper.getVelocityCms()
-        x_hoist = self.hoistStepper.getPositionCm()
-        v_hoist = self.hoistStepper.getVelocityCms()
+        x_cart = self.gantryStepper.getPositionMm()
+        v_cart = self.gantryStepper.getVelocityMms()
+        x_hoist = self.hoistStepper.getPositionMm()
+        v_hoist = self.hoistStepper.getVelocityMms()
         (theta, omega, wspeed) = self.readAngle()
         return (x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed)
 
