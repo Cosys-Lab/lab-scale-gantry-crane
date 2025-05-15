@@ -1111,6 +1111,9 @@
             name="Operator" abstractType="#bc38962a-4f19-4a8d-ba77-312034939ffa"/>
         <ownedParts xsi:type="org.polarsys.capella.core.data.cs:Part" id="1feb8abf-ccec-4af4-b238-71a9d4287597"
             name="Terminal" abstractType="#2f287896-1ad7-4950-9b11-688166b3bd04"/>
+        <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+            id="6b0863e8-b174-4af0-a907-2d3d4f935687" name="Mouse, Keyboard, Monitor"
+            linkEnds="#489372d4-f3bb-44e0-8a27-9b2b93a2352f #0f964d13-9864-411d-8f84-e0223c0a583d"/>
         <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
             id="d9dcf7cf-0112-4689-8049-372eb4f4b1fd" name="Physical System">
           <ownedTraces xsi:type="org.polarsys.capella.core.data.capellacommon:TransfoLink"
@@ -1141,59 +1144,38 @@
               id="724405f7-d7c5-41fe-9f7a-410a349069a7" targetElement="#d669a31b-9a61-4f47-a3d7-61c56382d82a"
               sourceElement="#d645abe2-9045-4d64-873f-2cae42b71c6c"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="87c68563-081c-48eb-8de7-bf6c5c2b7d42"
-              name="Python Crane Program" abstractType="#25b0299d-72da-4037-b862-d8dd81f05c5e"/>
+              name="Central Manager" abstractType="#25b0299d-72da-4037-b862-d8dd81f05c5e"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="aaeaa503-8617-4a6a-9e77-fd6e95b7e337"
-              name="Python GUI" abstractType="#b43b81a8-a228-4d06-b9aa-ddac6b6c05b2"/>
+              name="Operator Interface" abstractType="#b43b81a8-a228-4d06-b9aa-ddac6b6c05b2"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="6261bc23-1a59-4bc7-819d-2645e3f815c7"
-              name="Electromagnetic Hoist" abstractType="#7e2cb948-11f9-4929-91a2-fb646aef1ae3"/>
+              name="Load Connector" abstractType="#7e2cb948-11f9-4929-91a2-fb646aef1ae3"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="772f864d-6716-4cd0-b2ed-2b23f35fa96f"
-              name="Motor with cart" abstractType="#71d98ecd-1495-4dc5-b678-0d6c764aff63"/>
+              name="Horizontal Load Displacer" abstractType="#71d98ecd-1495-4dc5-b678-0d6c764aff63"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="31216a5b-ac44-4e44-8bd5-30642218df51"
-              name="Physical Crane Frame" abstractType="#416a21eb-b064-4ca9-ac53-ab9ea01849b7"/>
+              name="Load Bearer" abstractType="#416a21eb-b064-4ca9-ac53-ab9ea01849b7"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="9863868c-43e2-4437-aecf-7b7d45d57d5f"
-              name="Motor with drum" abstractType="#139e1681-33a0-481e-920c-d279cfcd9352"/>
+              name="Vertical Load Displacer" abstractType="#139e1681-33a0-481e-920c-d279cfcd9352"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="3ee0ac69-fda2-4a5f-90c3-5d29a4f50585"
-              name="TMC4761-EVAL-1" abstractType="#45db4b4b-04bd-4814-95e9-e9058725b5ba"/>
+              name="Vertical Displacement Controller" abstractType="#45db4b4b-04bd-4814-95e9-e9058725b5ba"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="78dbe501-b8a4-4fda-92ca-c341e2b7ff2b"
-              name="TMC4761-EVAL-2" abstractType="#439dd39d-ddf6-4ef9-ac9b-8ec18908bb57"/>
+              name="Horizontal Displacement Controller" abstractType="#439dd39d-ddf6-4ef9-ac9b-8ec18908bb57"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="d645abe2-9045-4d64-873f-2cae42b71c6c"
-              name="Arduino Uno" abstractType="#cb882599-d6be-4387-b4f2-2cb8aba65ae1"/>
+              name="Load Connector Controller" abstractType="#cb882599-d6be-4387-b4f2-2cb8aba65ae1"/>
           <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="9b999cec-a5bf-44b4-a74f-40aa87856465"
-              name="Crane" abstractType="#37631bcf-6735-4a0c-b4c7-cd4bd62c7c01">
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="31ce9523-bd1d-4067-a452-a1589abb0b2e" deployedElement="#87c68563-081c-48eb-8de7-bf6c5c2b7d42"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="633ca544-cc06-4670-91d9-b7be33c7c5b0" deployedElement="#aaeaa503-8617-4a6a-9e77-fd6e95b7e337"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="0c85cd7b-6b02-4442-9c89-612196be0aff" deployedElement="#6261bc23-1a59-4bc7-819d-2645e3f815c7"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="cfea60cd-5a7f-484e-af07-875a3afa0ffa" deployedElement="#772f864d-6716-4cd0-b2ed-2b23f35fa96f"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="9861e442-583d-457a-ac91-bc7604a3dada" deployedElement="#31216a5b-ac44-4e44-8bd5-30642218df51"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="e1f85853-bd63-411f-9992-32bba4dcca96" deployedElement="#9863868c-43e2-4437-aecf-7b7d45d57d5f"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="5c69f5e0-e4e5-4836-849d-9cfb79f2070a" deployedElement="#3ee0ac69-fda2-4a5f-90c3-5d29a4f50585"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="e148affe-1a67-42e2-b38b-681567fe0233" deployedElement="#78dbe501-b8a4-4fda-92ca-c341e2b7ff2b"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-            <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
-                id="c745cc99-e6fe-4b0b-b310-02164e34da85" deployedElement="#d645abe2-9045-4d64-873f-2cae42b71c6c"
-                location="#9b999cec-a5bf-44b4-a74f-40aa87856465"/>
-          </ownedFeatures>
+              name="Crane" abstractType="#37631bcf-6735-4a0c-b4c7-cd4bd62c7c01"/>
+          <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="cc199f3a-e3d6-46f7-8773-e8896dd89180"
+              name="Personal Computer" abstractType="#8aceeb25-15c0-4bd1-821c-f05a9b7fdf9e"/>
           <ownedComponentRealizations xsi:type="org.polarsys.capella.core.data.cs:ComponentRealization"
               id="d63d895d-8f83-444f-bd69-7866d80f73a8" targetElement="#e48512b3-2f43-4dfd-9523-cac4e68c66b1"
               sourceElement="#d9dcf7cf-0112-4689-8049-372eb4f4b1fd"/>
+          <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+              id="d67a711a-cbdc-4578-9650-890b1522bc8b" name="USB - Serial" linkEnds="#e095c0a3-e13d-4c78-bbc2-51b14cb0d5b9 #f536503d-86b8-4653-8470-7e16ccc92e4f"/>
+          <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+              id="f26dafed-e842-425d-9912-1802c57fc907" name="USB" linkEnds="#03d469b1-3446-4ce0-a4f5-8fc321d9560c #6504d438-91ce-456a-8097-d4efc2d2c95d"/>
+          <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+              id="5fecfaf0-9b91-4f73-b718-6521a0346710" name="USB" linkEnds="#54f4fce8-10aa-4343-9d4c-cbcbaff52888 #6b2ca780-36e1-4cee-ba58-8967075e232d"/>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="25b0299d-72da-4037-b862-d8dd81f05c5e" name="Python Crane Program"
-              nature="BEHAVIOR">
+              id="25b0299d-72da-4037-b862-d8dd81f05c5e" name="Central Manager" nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="eabf89ed-9c58-4f04-90c6-886987460dce" targetElement="#14a3fd5a-3a5c-480c-905c-cd797b6c4431"
                 sourceElement="#25b0299d-72da-4037-b862-d8dd81f05c5e"/>
@@ -1202,7 +1184,8 @@
                 sourceElement="#25b0299d-72da-4037-b862-d8dd81f05c5e"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="b43b81a8-a228-4d06-b9aa-ddac6b6c05b2" name="Python GUI" nature="BEHAVIOR">
+              id="b43b81a8-a228-4d06-b9aa-ddac6b6c05b2" name="Operator Interface"
+              nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="20dc2e0f-3614-4b57-9876-fec2da620c8a" targetElement="#f8adfc85-2e6b-4df1-b17d-833755381bab"
                 sourceElement="#b43b81a8-a228-4d06-b9aa-ddac6b6c05b2"/>
@@ -1214,8 +1197,7 @@
                 sourceElement="#b43b81a8-a228-4d06-b9aa-ddac6b6c05b2"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="7e2cb948-11f9-4929-91a2-fb646aef1ae3" name="Electromagnetic Hoist"
-              nature="BEHAVIOR">
+              id="7e2cb948-11f9-4929-91a2-fb646aef1ae3" name="Load Connector" nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="afa4827e-77ff-4f3f-9850-4f4b4e6208d5" targetElement="#60ae56fe-ff44-4c5d-b1b6-874ad78d476a"
                 sourceElement="#7e2cb948-11f9-4929-91a2-fb646aef1ae3"/>
@@ -1224,7 +1206,8 @@
                 sourceElement="#7e2cb948-11f9-4929-91a2-fb646aef1ae3"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="71d98ecd-1495-4dc5-b678-0d6c764aff63" name="Motor with cart" nature="BEHAVIOR">
+              id="71d98ecd-1495-4dc5-b678-0d6c764aff63" name="Horizontal Load Displacer"
+              nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="e007cac2-584f-4fd3-ba2e-8148e577ca80" targetElement="#7e68afe7-1f98-4abd-b64f-bf7b2630af75"
                 sourceElement="#71d98ecd-1495-4dc5-b678-0d6c764aff63"/>
@@ -1233,8 +1216,7 @@
                 sourceElement="#71d98ecd-1495-4dc5-b678-0d6c764aff63"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="416a21eb-b064-4ca9-ac53-ab9ea01849b7" name="Physical Crane Frame"
-              nature="BEHAVIOR">
+              id="416a21eb-b064-4ca9-ac53-ab9ea01849b7" name="Load Bearer" nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="cccd4e5a-439c-4c49-aa38-e392252d2d93" targetElement="#b3229d12-a5eb-456f-b637-17c6256d9487"
                 sourceElement="#416a21eb-b064-4ca9-ac53-ab9ea01849b7"/>
@@ -1243,7 +1225,8 @@
                 sourceElement="#416a21eb-b064-4ca9-ac53-ab9ea01849b7"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="139e1681-33a0-481e-920c-d279cfcd9352" name="Motor with drum" nature="BEHAVIOR">
+              id="139e1681-33a0-481e-920c-d279cfcd9352" name="Vertical Load Displacer"
+              nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="b37041ee-ce6b-4995-ad8d-e3a535527ae6" targetElement="#f52c944e-17e7-4df4-868b-4dd61485a5ef"
                 sourceElement="#139e1681-33a0-481e-920c-d279cfcd9352"/>
@@ -1252,7 +1235,8 @@
                 sourceElement="#139e1681-33a0-481e-920c-d279cfcd9352"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="45db4b4b-04bd-4814-95e9-e9058725b5ba" name="TMC4761-EVAL-1" nature="BEHAVIOR">
+              id="45db4b4b-04bd-4814-95e9-e9058725b5ba" name="Vertical Displacement Controller"
+              nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="623ac7e7-9091-4652-9400-a7cefc28216e" targetElement="#36113041-3277-43c3-bf37-b21d24a28f75"
                 sourceElement="#45db4b4b-04bd-4814-95e9-e9058725b5ba"/>
@@ -1261,7 +1245,8 @@
                 sourceElement="#45db4b4b-04bd-4814-95e9-e9058725b5ba"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="439dd39d-ddf6-4ef9-ac9b-8ec18908bb57" name="TMC4761-EVAL-2" nature="BEHAVIOR">
+              id="439dd39d-ddf6-4ef9-ac9b-8ec18908bb57" name="Horizontal Displacement Controller"
+              nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="86e2df0d-7167-4446-883c-4c64c640e842" targetElement="#ef0f3f96-8fa1-4282-8936-20740915fdf2"
                 sourceElement="#439dd39d-ddf6-4ef9-ac9b-8ec18908bb57"/>
@@ -1270,7 +1255,8 @@
                 sourceElement="#439dd39d-ddf6-4ef9-ac9b-8ec18908bb57"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="cb882599-d6be-4387-b4f2-2cb8aba65ae1" name="Arduino Uno" nature="BEHAVIOR">
+              id="cb882599-d6be-4387-b4f2-2cb8aba65ae1" name="Load Connector Controller"
+              nature="BEHAVIOR">
             <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
                 id="4bbf3a26-8628-4695-bb63-0b52876eccb0" targetElement="#5b2c1dad-085b-4e48-a7cd-d1af1f577d36"
                 sourceElement="#cb882599-d6be-4387-b4f2-2cb8aba65ae1"/>
@@ -1279,7 +1265,137 @@
                 sourceElement="#cb882599-d6be-4387-b4f2-2cb8aba65ae1"/>
           </ownedPhysicalComponents>
           <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
-              id="37631bcf-6735-4a0c-b4c7-cd4bd62c7c01" name="Crane" nature="NODE"/>
+              id="37631bcf-6735-4a0c-b4c7-cd4bd62c7c01" name="Crane" nature="NODE">
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="38f08dc4-d3af-4fb7-9ab8-1b8dfc1b31a9"
+                name="Arduino" abstractType="#60a49aae-3060-4af2-8004-9d5b12d2fcee">
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="c745cc99-e6fe-4b0b-b310-02164e34da85" deployedElement="#d645abe2-9045-4d64-873f-2cae42b71c6c"
+                  location="#38f08dc4-d3af-4fb7-9ab8-1b8dfc1b31a9"/>
+            </ownedFeatures>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="68cd260d-25a8-4bca-a28c-39a3118bc3fb"
+                name="TMC4761-EVAL-1" abstractType="#71c19458-ffe1-4373-acc0-84213ec3f8a3">
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="5c69f5e0-e4e5-4836-849d-9cfb79f2070a" deployedElement="#3ee0ac69-fda2-4a5f-90c3-5d29a4f50585"
+                  location="#68cd260d-25a8-4bca-a28c-39a3118bc3fb"/>
+            </ownedFeatures>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="15a4c8a1-e08a-42c9-93e0-5a4173f8f38c"
+                name="TMC4761-EVAL-2" abstractType="#0a5c027c-9016-4bfc-9094-a7c40f1e69b5">
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="e148affe-1a67-42e2-b38b-681567fe0233" deployedElement="#78dbe501-b8a4-4fda-92ca-c341e2b7ff2b"
+                  location="#15a4c8a1-e08a-42c9-93e0-5a4173f8f38c"/>
+            </ownedFeatures>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="16bda30a-9e3a-4d40-b49f-bf931eda1e7b"
+                name="Frame" abstractType="#f97417a4-eebf-4571-8ddf-7a7fb4799fb7">
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="9861e442-583d-457a-ac91-bc7604a3dada" deployedElement="#31216a5b-ac44-4e44-8bd5-30642218df51"
+                  location="#16bda30a-9e3a-4d40-b49f-bf931eda1e7b"/>
+            </ownedFeatures>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="9cabc529-6b21-429a-9f2b-7d7f19d6eda1"
+                name="Electromagnetic Hoist" abstractType="#98df99df-ad78-43e9-b74a-b6f324269ec2">
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="0c85cd7b-6b02-4442-9c89-612196be0aff" deployedElement="#6261bc23-1a59-4bc7-819d-2645e3f815c7"
+                  location="#9cabc529-6b21-429a-9f2b-7d7f19d6eda1"/>
+            </ownedFeatures>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="2c541809-a3f4-4465-a00f-9b65c84c46da"
+                name="Motor with drum" abstractType="#1142f895-84ab-4393-ae4f-2e92661a5724">
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="e1f85853-bd63-411f-9992-32bba4dcca96" deployedElement="#9863868c-43e2-4437-aecf-7b7d45d57d5f"
+                  location="#2c541809-a3f4-4465-a00f-9b65c84c46da"/>
+            </ownedFeatures>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="9710f012-0d09-4154-8e6f-cc8d639c6343"
+                name="Motor with cart" abstractType="#7b436f67-926a-4133-a2d9-d2e8a2a4b3c0">
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="cfea60cd-5a7f-484e-af07-875a3afa0ffa" deployedElement="#772f864d-6716-4cd0-b2ed-2b23f35fa96f"
+                  location="#9710f012-0d09-4154-8e6f-cc8d639c6343"/>
+            </ownedFeatures>
+            <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+                id="3e8936b8-0bec-4d91-8395-a0d91e88c567" name="Hoist to Drum connection"
+                linkEnds="#263a740d-1d6d-40aa-9fc8-d83c97f8ff85 #e16cbd18-d927-4208-9df9-4eba83ef2b95"/>
+            <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+                id="59bfb2bf-7732-402c-8840-4b983292de88" name="Mount" linkEnds="#5247dc3d-6963-4b6f-925f-8cc5a5242bbe #5df29584-8c38-4ca1-bf6f-e1b7b98d1a53"/>
+            <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+                id="a497d421-0f50-406f-b4f8-b4138bfd36a0" name="Wiring" linkEnds="#bfbc0f39-ed92-43ba-a603-e6c096b3b166 #ae2161de-f5a3-4924-80ad-27f0bf98d641"/>
+            <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+                id="4c3d346c-ca92-4aee-8b74-f280246f83d3" name="Wiring" linkEnds="#6cce88b4-cc53-4725-846e-633f0a96c7db #19f580e8-c37b-4943-ae35-b04d233e5134"/>
+            <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+                id="03fd6878-5138-4e5f-a9c9-30d7fa3c4d6d" name="Wiring" linkEnds="#1d753ccb-9285-4370-903d-ff603721cbee #8a823ee8-515f-4611-987a-39a1f892d38c"/>
+            <ownedPhysicalLinks xsi:type="org.polarsys.capella.core.data.cs:PhysicalLink"
+                id="2f6093d2-3b3d-4361-8ed6-9f0842984011" name="Wheels" linkEnds="#c100ae0c-b0d2-43b0-b8b4-5d2c53965920 #c30b768e-5e66-4ac9-b61e-b8ce29221ac9"/>
+            <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+                id="60a49aae-3060-4af2-8004-9d5b12d2fcee" name="Arduino" nature="NODE">
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="f536503d-86b8-4653-8470-7e16ccc92e4f" name="PP 1"/>
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="bfbc0f39-ed92-43ba-a603-e6c096b3b166" name="PP 2"/>
+            </ownedPhysicalComponents>
+            <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+                id="71c19458-ffe1-4373-acc0-84213ec3f8a3" name="TMC4761-EVAL-1" nature="NODE">
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="6504d438-91ce-456a-8097-d4efc2d2c95d" name="PP 1"/>
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="6cce88b4-cc53-4725-846e-633f0a96c7db" name="PP 2"/>
+            </ownedPhysicalComponents>
+            <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+                id="0a5c027c-9016-4bfc-9094-a7c40f1e69b5" name="TMC4761-EVAL-2" nature="NODE">
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="6b2ca780-36e1-4cee-ba58-8967075e232d" name="PP 1"/>
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="1d753ccb-9285-4370-903d-ff603721cbee" name="PP 2"/>
+            </ownedPhysicalComponents>
+            <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+                id="f97417a4-eebf-4571-8ddf-7a7fb4799fb7" name="Frame" nature="NODE">
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="c100ae0c-b0d2-43b0-b8b4-5d2c53965920" name="PP 1"/>
+            </ownedPhysicalComponents>
+            <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+                id="98df99df-ad78-43e9-b74a-b6f324269ec2" name="Electromagnetic Hoist"
+                nature="NODE">
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="263a740d-1d6d-40aa-9fc8-d83c97f8ff85" name="PP 1"/>
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="ae2161de-f5a3-4924-80ad-27f0bf98d641" name="PP 2"/>
+            </ownedPhysicalComponents>
+            <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+                id="1142f895-84ab-4393-ae4f-2e92661a5724" name="Motor with drum" nature="NODE">
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="e16cbd18-d927-4208-9df9-4eba83ef2b95" name="PP 1"/>
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="5247dc3d-6963-4b6f-925f-8cc5a5242bbe" name="PP 2"/>
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="19f580e8-c37b-4943-ae35-b04d233e5134" name="PP 3"/>
+            </ownedPhysicalComponents>
+            <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+                id="7b436f67-926a-4133-a2d9-d2e8a2a4b3c0" name="Motor with cart" nature="NODE">
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="5df29584-8c38-4ca1-bf6f-e1b7b98d1a53" name="PP 1"/>
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="8a823ee8-515f-4611-987a-39a1f892d38c" name="PP 2"/>
+              <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                  id="c30b768e-5e66-4ac9-b61e-b8ce29221ac9" name="PP 3"/>
+            </ownedPhysicalComponents>
+          </ownedPhysicalComponents>
+          <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+              id="8aceeb25-15c0-4bd1-821c-f05a9b7fdf9e" name="Personal Computer" nature="NODE">
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                id="e095c0a3-e13d-4c78-bbc2-51b14cb0d5b9" name="PP 1"/>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:Part" id="3a506000-8898-4ec1-a48e-6d6f1142482e"
+                name="Python" abstractType="#45425963-4016-4276-acfa-6a9bcaf1df30">
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="633ca544-cc06-4670-91d9-b7be33c7c5b0" deployedElement="#aaeaa503-8617-4a6a-9e77-fd6e95b7e337"
+                  location="#3a506000-8898-4ec1-a48e-6d6f1142482e"/>
+              <ownedDeploymentLinks xsi:type="org.polarsys.capella.core.data.pa.deployment:PartDeploymentLink"
+                  id="31ce9523-bd1d-4067-a452-a1589abb0b2e" deployedElement="#87c68563-081c-48eb-8de7-bf6c5c2b7d42"
+                  location="#3a506000-8898-4ec1-a48e-6d6f1142482e"/>
+            </ownedFeatures>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                id="03d469b1-3446-4ce0-a4f5-8fc321d9560c" name="PP 3"/>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                id="54f4fce8-10aa-4343-9d4c-cbcbaff52888" name="PP 4"/>
+            <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+                id="0f964d13-9864-411d-8f84-e0223c0a583d" name="PP 5"/>
+            <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
+                id="45425963-4016-4276-acfa-6a9bcaf1df30" name="Python" nature="NODE"/>
+          </ownedPhysicalComponents>
         </ownedPhysicalComponents>
         <ownedPhysicalComponents xsi:type="org.polarsys.capella.core.data.pa:PhysicalComponent"
             id="0a798317-2610-4757-9d43-44023ed8ac3b" name="Container" actor="true"
@@ -1297,6 +1413,8 @@
           <ownedFunctionalAllocation xsi:type="org.polarsys.capella.core.data.fa:ComponentFunctionalAllocation"
               id="c6da2ed3-224c-4e70-920f-bb4f7617659c" targetElement="#ab1cf2aa-f89f-4e3b-87d7-64c197b0196f"
               sourceElement="#bc38962a-4f19-4a8d-ba77-312034939ffa"/>
+          <ownedFeatures xsi:type="org.polarsys.capella.core.data.cs:PhysicalPort"
+              id="489372d4-f3bb-44e0-8a27-9b2b93a2352f" name="PP 1"/>
           <ownedComponentRealizations xsi:type="org.polarsys.capella.core.data.cs:ComponentRealization"
               id="ad200db1-72b5-44b7-a38d-587bc0a8fa06" targetElement="#0dacf77f-303e-48d5-b166-e3a0e68764ae"
               sourceElement="#bc38962a-4f19-4a8d-ba77-312034939ffa"/>
