@@ -100,7 +100,7 @@ void loop() {
   // update as fast as possible
   updateAngle();
   // output at 100 Hz?
-  if(millis() > prev_millis_angle+100){
+  if(millis() > prev_millis_angle+10){
     prev_millis_angle = millis();
     wspeed = (analogRead(ANEMOMETER_PIN) - anemometer_zero) * (32.4 - 0) / (410 - anemometer_zero) + 0;
     printHuman();
