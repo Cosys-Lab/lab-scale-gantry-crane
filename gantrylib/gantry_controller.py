@@ -39,8 +39,10 @@ class GantryController():
                                     + " password=" + props["database password"]
             self.connect_to_db = props["connect to db"]
             if self.connect_to_db:
+                logging.info("Connecting to database")
                 self.dbconn = psycopg.connect(self.dbaddr)
             else:
+                logging.info("Not connecting to database")
                 self.dbconn = None
             self.simulatortopic = props["simulator topic"]
             self.validatortopic = props["validator topic"]
@@ -140,9 +142,6 @@ class GantryController():
             # fetch run number from database
             logging.info("Storing in database")
             self.storeTrajectory(traj)
-            logging.info("Trajectory stored, notifying simulator")
-            self.notifySimulator()
-            logging.info("Simulator notified, executing trajectory")
 
         if validate and write_to_db:
             logging.info("Trajectory stored, notifying simulator")

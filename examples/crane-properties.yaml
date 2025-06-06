@@ -20,7 +20,7 @@ validator topic: gantrycrane/validator
 simulator topic: gantrycrane/simulator
 
 # properties related to associated database
-connect to db: False
+connect to db: True
 database address: "127.0.0.1"
 database name: gantrycrane
 database user: postgres

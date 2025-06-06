@@ -323,7 +323,7 @@ class GantryStepper(Stepper):
         self.board.write_register(self.mc.REG.OPENLOOP_ACCELERATION, 0x0000003C)
 
         self.board.write_register(self.mc.REG.PHI_E_SELECTION, self.mc.ENUM.PHI_E_OPEN_LOOP)
-        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000BB8)
+        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000FA0)
 
         self.board.write_register(self.mc.REG.MODE_RAMP_MODE_MOTION, 0x00000008)
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, -20)
@@ -346,7 +346,7 @@ class GantryStepper(Stepper):
 
         # zero position reached, move away from it a tiny bit such that we can do encoder calibration.
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, 20)
-        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000BB8)
+        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000FA0)
         time.sleep(0.8)
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, 0)
         self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000000)
@@ -468,7 +468,7 @@ class HoistStepper(Stepper):
         self.board.write_register(self.mc.REG.OPENLOOP_ACCELERATION, 0x0000003C)
 
         self.board.write_register(self.mc.REG.PHI_E_SELECTION, self.mc.ENUM.PHI_E_OPEN_LOOP)
-        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000BB8)
+        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000FA0)
 
         self.board.write_register(self.mc.REG.MODE_RAMP_MODE_MOTION, 0x00000008)
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, -20)
