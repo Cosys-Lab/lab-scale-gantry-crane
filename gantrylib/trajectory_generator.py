@@ -1,37 +1,52 @@
-from griffe import Docstring
-import yaml
+from abc import ABC, abstractmethod
 from rockit import *
 from casadi import *
 import numpy as np
-from numpy import pi
 from scipy.constants import g
-import csv
-from scipy.io import savemat
 import scipy.linalg as la
 from scipy.integrate import solve_ivp
+import paho.mqtt.client as mqtt
+import pickle
+import json
+import logging
+import threading
+import uuid
 
-class TrajectoryGenerator:
+class AbstractTrajectoryGenerator(ABC):
+    """Abstract interface for trajectory generators."""
+
+    @abstractmethod
+    def generateTrajectory(self, start, stop):
+        pass
+
+class TrajectoryGenerator(AbstractTrajectoryGenerator):
     """A class to generate an optimal trajectory that moves the crane laterally from one position to another one.
     """
 
-    def __init__(self, properties_file) -> None:
+    def __init__(self, config: dict) -> None:
         """ Initialize a TrajectoryGenerator instance.
 
         Args:
-            properties_file (string): path to a properties file containing problem details.
+            config (dict): A dictionary containing problem details.
         """
-        with open(properties_file, 'r') as f:
-            props = yaml.safe_load(f)
-            self.mp = props["pendulum mass"]
-            self.dp = props["pendulum damping"]
-            self.r = props["rope length"]
-            # self.a_cart_lim = props["cart acceleration limit"]
-            self.a_cart_lim = 2.5
-            self.v_cart_lim = props["cart velocity limit"]
-            # eval this since pi/2 is a string in the yaml
-            self.theta_lim = eval(props["rope angle limit"])
+        self.mp = config["pendulum mass"]
+        self.dp = config["pendulum damping"]
+        self.r = config["rope length"]
+        # self.a_cart_lim = props["cart acceleration limit"]
+        self.a_cart_lim = 2.5
+        self.v_cart_lim = config["cart velocity limit"]
+        # eval this since pi/2 is a string in the yaml
+        self.theta_lim = config["rope angle limit"]
 
-    def generateTrajectory(self, start, stop):
+    def  generateTrajectory(self, start, stop, method='rockit'):
+        if method == 'rockit':
+            return self._generateTrajectoryRockit(start, stop)
+        elif method == 'lqr':
+            return self._generateTrajectoryLQR(start, stop)
+        else:
+            raise ValueError(f"Unknown method: {method}. Use 'rockit' or 'lqr'.")
+
+    def _generateTrajectoryRockit(self, start, stop):
         """Generates an optimal, monotone trajectory from start to stop,
         adhering to the limits imposed by the configurationfile used
         to create the TrajectoryGenerator
@@ -191,7 +206,7 @@ class TrajectoryGenerator:
             print(ocp.debug)
             return None    
         
-    def generateTrajectoryLQR(self, start, stop):
+    def _generateTrajectoryLQR(self, start, stop):
         """Generates an optimal trajectory using a Linear Quadratic Regulator
 
         Args:
@@ -267,39 +282,88 @@ class TrajectoryGenerator:
         else:
             return None
 
-        return sol, dxdt
+class MockTrajectoryGenerator(AbstractTrajectoryGenerator):
+    """Mock implementation for testing."""
 
-    def saveToCSV(self, filename, data, columnnames):
-        """Save output to CSV file.
+    def __init__(self, *args, **kwargs):
+        pass
 
-        Args:
-            filename (string): The filename.
-            data (tuple): data as returned by the trajectory generation methods.
-            columnnames (list): list of columnnames.
-        """
-        with open(filename, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(columnnames)
-            for row in zip(*data):
-                writer.writerow(row)
+    def generateTrajectory(self, start, stop):
+        # Return dummy data
+        ts = np.linspace(0, 1, 10)
+        xs = np.linspace(start, stop, 10)
+        dxs = np.gradient(xs, ts)
+        ddxs = np.gradient(dxs, ts)
+        thetas = np.zeros_like(ts)
+        dthetas = np.zeros_like(ts)
+        ddthetas = np.zeros_like(ts)
+        us = np.zeros_like(ts)
+        return (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas, us)
+    
+class MQTTCientTrajectoryGenerator(AbstractTrajectoryGenerator):
+    """
+    MQTT client that requests trajectories from a remote TrajectoryMQTTServer.
+    """
 
-    def saveDataToMat(self, filename, data, keys):
-        """Save output to a .mat file.
+    def __init__(self, config: dict, timeout=10):
+        self.broker = config.get("mqtt_broker", "localhost")
+        self.port = config.get("mqtt_port", 1883)
+        self.request_topic = config.get("mqtt_request_topic", "trajectory/request")
+        self.timeout = timeout
+        self._client = mqtt.Client()
+        self._client.on_message = self._on_message
+        self._client.connect(self.broker, self.port, 60)
+        self._responses = {}
+        self._lock = threading.Lock()
+        self._client.loop_start()
 
-        Args:
-            filename (string): The filename
-            data (tuple): data as returned by the trajectory generation methods.
-            keys (list): list of keys to use.
-        """
-        dic = dict(zip(keys, data))
-        savemat(filename, dic)
+    def _on_message(self, client, userdata, msg):
+        try:
+            request_id = msg.topic.split("/")[-1]
+            with self._lock:
+                self._responses[request_id] = msg.payload
+            logging.info(f"Received response for request_id={request_id}")
+        except Exception as e:
+            logging.info(f"Error in on_message: {e}")
 
-    def saveParamToMat(self, filename):
-        """Save the parameters of this current trajectory generator to a mat
-        file.
+    def generateTrajectory(self, start, stop, method='rockit'):
+        request_id = str(uuid.uuid4())
+        reply_topic = f"trajectory/response/{request_id}"
 
-        Args:
-            filename (string): The filename.
-        """
-        dic = {"mp": self.mp, "dp": self.dp, "r": self.r}
-        savemat(filename, dic)
+        # Subscribe to the unique reply topic
+        self._client.subscribe(reply_topic)
+
+        payload = {
+            "start": start,
+            "stop": stop,
+            "method": method,
+            "request_id": request_id
+        }
+        self._client.publish(self.request_topic, json.dumps(payload))
+        logging.info(f"Published trajectory request with request_id={request_id}")
+
+        # Wait for the response
+        response = None
+        for _ in range(int(self.timeout * 10)):
+            with self._lock:
+                if request_id in self._responses:
+                    response = self._responses.pop(request_id)
+                    break
+            threading.Event().wait(0.1)
+
+        # Unsubscribe from the reply topic
+        self._client.unsubscribe(reply_topic)
+
+        if response is None:
+            raise TimeoutError(f"No response received for request_id={request_id} within {self.timeout} seconds.")
+
+        # Unpickle the result
+        result = pickle.loads(response)
+        return result
+
+    def __del__(self):
+        try:
+            self._client.loop_stop()
+            self._client.disconnect()
+        except Exception:
+            pass
