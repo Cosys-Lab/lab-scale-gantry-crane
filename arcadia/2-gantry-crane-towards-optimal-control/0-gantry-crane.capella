@@ -49,7 +49,7 @@
           <ownedFunctions xsi:type="org.polarsys.capella.core.data.oa:OperationalActivity"
               id="1f9f3ec1-934d-4a89-8bac-032d6b07003d" name="Move Container"/>
           <ownedFunctions xsi:type="org.polarsys.capella.core.data.oa:OperationalActivity"
-              id="9edab80e-b1dd-473e-84b9-2e8ada97586d" name="Has Location"/>
+              id="9edab80e-b1dd-473e-84b9-2e8ada97586d" name="Undergoes Transport"/>
           <ownedFunctions xsi:type="org.polarsys.capella.core.data.oa:OperationalActivity"
               id="4db92f26-b2de-4c54-9f0b-f7e00f486c8f" name="Inspect Traces"/>
           <ownedFunctionalExchanges xsi:type="org.polarsys.capella.core.data.fa:FunctionalExchange"

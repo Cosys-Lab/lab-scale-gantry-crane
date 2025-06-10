@@ -31,7 +31,7 @@
         <description xmi:type="description_1:DiagramDescription" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/oa.odesign#//@ownedViewpoints[name='Operational%20Analysis']/@ownedRepresentations[name='Operational%20Activity%20Breakdown']"/>
         <target xmi:type="org.polarsys.capella.core.data.oa:OperationalActivity" href="0-gantry-crane.capella#6775ef99-0340-43db-8221-fcde1d45153a"/>
       </ownedRepresentationDescriptors>
-      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_Q9oucC9AEfCeGsK39RCjLA" name="[OAB] Operational Entities" repPath="#_Q9ngUC9AEfCeGsK39RCjLA" changeId="1747323760057">
+      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_Q9oucC9AEfCeGsK39RCjLA" name="[OAB] Operational Entities" repPath="#_Q9ngUC9AEfCeGsK39RCjLA" changeId="1747639215652">
         <description xmi:type="description_1:DiagramDescription" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/oa.odesign#//@ownedViewpoints[name='Operational%20Analysis']/@ownedRepresentations[name='Operational%20Entity%20Blank']"/>
         <target xmi:type="org.polarsys.capella.core.data.oa:EntityPkg" href="0-gantry-crane.capella#71df7560-3fc5-44ae-a0cf-843d01de88f2"/>
       </ownedRepresentationDescriptors>
@@ -880,7 +880,7 @@
           <description xmi:type="style:FlatContainerStyleDescription" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/oa.odesign#//@ownedViewpoints[name='Operational%20Analysis']/@ownedRepresentations[name='Operational%20Entity%20Blank']/@defaultLayer/@containerMappings[name='OAB_Entity1']/@style"/>
         </ownedStyle>
         <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/oa.odesign#//@ownedViewpoints[name='Operational%20Analysis']/@ownedRepresentations[name='Operational%20Entity%20Blank']/@defaultLayer/@containerMappings[name='OAB_Entity1']"/>
-        <ownedDiagramElements xmi:type="diagram:DNode" uid="_K_JXgC_UEfCUw73wlyNShw" name="Has Location" incomingEdges="_NIpaoC_UEfCUw73wlyNShw" width="7" height="7" resizeKind="NSEW">
+        <ownedDiagramElements xmi:type="diagram:DNode" uid="_K_JXgC_UEfCUw73wlyNShw" name="Undergoes Transport" incomingEdges="_NIpaoC_UEfCUw73wlyNShw" width="7" height="7" resizeKind="NSEW">
           <target xmi:type="org.polarsys.capella.core.data.oa:OperationalActivity" href="0-gantry-crane.capella#9edab80e-b1dd-473e-84b9-2e8ada97586d"/>
           <semanticElements xmi:type="org.polarsys.capella.core.data.oa:OperationalActivity" href="0-gantry-crane.capella#9edab80e-b1dd-473e-84b9-2e8ada97586d"/>
           <ownedStyle xmi:type="diagram:Square" uid="_K_JXgS_UEfCUw73wlyNShw" labelColor="91,64,64" borderSize="1" borderSizeComputationExpression="1" borderColor="91,64,64" labelPosition="node" width="-1" height="-1" color="247,218,116">

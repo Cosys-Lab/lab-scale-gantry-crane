@@ -8,7 +8,7 @@
     </ownedViews>
     <ownedViews xmi:type="viewpoint:DView" uid="_EuYngC85EfCeGsK39RCjLA">
       <viewpoint xmi:type="description:Viewpoint" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/physical.odesign#//@ownedViewpoints[name='Physical%20Architecture']"/>
-      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_Za_zsC_tEfCUw73wlyNShw" name="[PAB] Physical Architecture" repPath="#_Za9XcC_tEfCUw73wlyNShw" changeId="1747313022561">
+      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_Za_zsC_tEfCUw73wlyNShw" name="[PAB] Physical Architecture" repPath="#_Za9XcC_tEfCUw73wlyNShw" changeId="1747386873196">
         <eAnnotations xmi:type="description:DAnnotation" uid="_ZbCP8y_tEfCUw73wlyNShw" source="https://www.polarsys.org/capella/dannotation/DesactivatedFilters">
           <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_ZbCP9C_tEfCUw73wlyNShw" key="hide.computed.component.exchanges.filter" value="true"/>
           <details xmi:type="ecore:EStringToStringMapEntry" xmi:id="_ZbCP9S_tEfCUw73wlyNShw" key="hide.computed.physical.links.filter" value="true"/>
@@ -31,7 +31,7 @@
         <description xmi:type="description_1:DiagramDescription" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/oa.odesign#//@ownedViewpoints[name='Operational%20Analysis']/@ownedRepresentations[name='Operational%20Activity%20Breakdown']"/>
         <target xmi:type="org.polarsys.capella.core.data.oa:OperationalActivity" href="0-gantry-crane.capella#6775ef99-0340-43db-8221-fcde1d45153a"/>
       </ownedRepresentationDescriptors>
-      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_Q9oucC9AEfCeGsK39RCjLA" name="[OAB] Operational Entities" repPath="#_Q9ngUC9AEfCeGsK39RCjLA" changeId="1747214056308">
+      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_Q9oucC9AEfCeGsK39RCjLA" name="[OAB] Operational Entities" repPath="#_Q9ngUC9AEfCeGsK39RCjLA" changeId="1747638417418">
         <description xmi:type="description_1:DiagramDescription" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/oa.odesign#//@ownedViewpoints[name='Operational%20Analysis']/@ownedRepresentations[name='Operational%20Entity%20Blank']"/>
         <target xmi:type="org.polarsys.capella.core.data.oa:EntityPkg" href="0-gantry-crane.capella#71df7560-3fc5-44ae-a0cf-843d01de88f2"/>
       </ownedRepresentationDescriptors>
@@ -603,7 +603,7 @@
           <description xmi:type="style:FlatContainerStyleDescription" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/oa.odesign#//@ownedViewpoints[name='Operational%20Analysis']/@ownedRepresentations[name='Operational%20Entity%20Blank']/@defaultLayer/@containerMappings[name='OAB_Entity1']/@style"/>
         </ownedStyle>
         <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/org.polarsys.capella.core.sirius.analysis/description/oa.odesign#//@ownedViewpoints[name='Operational%20Analysis']/@ownedRepresentations[name='Operational%20Entity%20Blank']/@defaultLayer/@containerMappings[name='OAB_Entity1']"/>
-        <ownedDiagramElements xmi:type="diagram:DNode" uid="_K_JXgC_UEfCUw73wlyNShw" name="Has Location" incomingEdges="_NIpaoC_UEfCUw73wlyNShw" width="7" height="7" resizeKind="NSEW">
+        <ownedDiagramElements xmi:type="diagram:DNode" uid="_K_JXgC_UEfCUw73wlyNShw" name="Undergoes Transport" incomingEdges="_NIpaoC_UEfCUw73wlyNShw" width="7" height="7" resizeKind="NSEW">
           <target xmi:type="org.polarsys.capella.core.data.oa:OperationalActivity" href="0-gantry-crane.capella#9edab80e-b1dd-473e-84b9-2e8ada97586d"/>
           <semanticElements xmi:type="org.polarsys.capella.core.data.oa:OperationalActivity" href="0-gantry-crane.capella#9edab80e-b1dd-473e-84b9-2e8ada97586d"/>
           <ownedStyle xmi:type="diagram:Square" uid="_K_JXgS_UEfCUw73wlyNShw" labelColor="91,64,64" borderSize="1" borderSizeComputationExpression="1" borderColor="91,64,64" labelPosition="node" width="-1" height="-1" color="247,218,116">
@@ -6792,17 +6792,17 @@
         </edges>
         <edges xmi:type="notation:Edge" xmi:id="_Z8fOszGDEfCyR4LJtKfwGQ" type="4001" element="_Z8E_BDGDEfCyR4LJtKfwGQ" source="_Z8enoDGDEfCyR4LJtKfwGQ" target="_Z8enqDGDEfCyR4LJtKfwGQ">
           <children xmi:type="notation:Node" xmi:id="_Z8fOtzGDEfCyR4LJtKfwGQ" type="6001">
-            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_Z8fOuDGDEfCyR4LJtKfwGQ" x="10"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_Z8fOuDGDEfCyR4LJtKfwGQ" x="27" y="-13"/>
           </children>
           <children xmi:type="notation:Node" xmi:id="_Z8fOuTGDEfCyR4LJtKfwGQ" type="6002">
-            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_Z8fOujGDEfCyR4LJtKfwGQ" y="-10"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_Z8fOujGDEfCyR4LJtKfwGQ" x="5" y="-7"/>
           </children>
           <children xmi:type="notation:Node" xmi:id="_Z8fOuzGDEfCyR4LJtKfwGQ" type="6003">
-            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_Z8fOvDGDEfCyR4LJtKfwGQ" x="-10"/>
+            <layoutConstraint xmi:type="notation:Bounds" xmi:id="_Z8fOvDGDEfCyR4LJtKfwGQ" x="4"/>
           </children>
           <styles xmi:type="notation:ConnectorStyle" xmi:id="_Z8fOtDGDEfCyR4LJtKfwGQ" jumpLinkStatus="Above" jumpLinkType="Tunnel"/>
           <styles xmi:type="notation:FontStyle" xmi:id="_Z8fOtTGDEfCyR4LJtKfwGQ" fontColor="16777215" fontName="Segoe UI" fontHeight="8"/>
-          <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_Z8fOtjGDEfCyR4LJtKfwGQ" points="[-5, 0, 103, 207]$[-108, 0, 0, 207]$[-108, -202, 0, 5]"/>
+          <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_Z8fOtjGDEfCyR4LJtKfwGQ" points="[-5, 0, 103, 27]$[-108, 0, 0, 27]$[-108, -22, 0, 5]"/>
           <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_Z8fOvTGDEfCyR4LJtKfwGQ" id="(0.5,0.5)"/>
           <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_Z8fOvjGDEfCyR4LJtKfwGQ" id="(0.5,0.5)"/>
         </edges>

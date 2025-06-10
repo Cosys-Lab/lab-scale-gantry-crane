@@ -49,7 +49,7 @@
           <ownedFunctions xsi:type="org.polarsys.capella.core.data.oa:OperationalActivity"
               id="1f9f3ec1-934d-4a89-8bac-032d6b07003d" name="Move Container"/>
           <ownedFunctions xsi:type="org.polarsys.capella.core.data.oa:OperationalActivity"
-              id="9edab80e-b1dd-473e-84b9-2e8ada97586d" name="Has Location"/>
+              id="9edab80e-b1dd-473e-84b9-2e8ada97586d" name="Undergoes Transport"/>
           <ownedFunctions xsi:type="org.polarsys.capella.core.data.oa:OperationalActivity"
               id="4db92f26-b2de-4c54-9f0b-f7e00f486c8f" name="Inspect Traces"/>
           <ownedFunctions xsi:type="org.polarsys.capella.core.data.oa:OperationalActivity"
@@ -100,7 +100,7 @@
               id="bd0c4d10-68cf-4912-8f74-e414f3a354b3" involved="#03e2fde0-c33d-477a-bd73-d6e4c0dbfae5"/>
         </ownedOperationalCapabilities>
         <ownedOperationalCapabilities xsi:type="org.polarsys.capella.core.data.oa:OperationalCapability"
-            id="3f95a689-8c64-4a79-9ca9-ae6ae4ac1746" name="OperationalCapability 7"/>
+            id="3f95a689-8c64-4a79-9ca9-ae6ae4ac1746" name="Fault Diagnosis"/>
       </ownedAbstractCapabilityPkg>
       <ownedInterfacePkg xsi:type="org.polarsys.capella.core.data.cs:InterfacePkg"
           id="c4ecc80f-6320-4448-ab05-8a7a838ce872" name="Interfaces"/>
