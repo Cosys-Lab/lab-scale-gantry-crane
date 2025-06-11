@@ -1,3 +1,5 @@
+CREATE TYPE ship_slot_state AS ENUM ('empty', 'fillable', 'filled');
+
 -- public.cargomanifest definition
 
 -- Drop table
@@ -68,6 +70,7 @@ CREATE TABLE public.ship (
 	CONSTRAINT pk_id PRIMARY KEY (id)
 );
 
+CREATE TYPE quay_slot_state AS ENUM ('empty', 'fillable', 'filled');
 
 -- public.quay definition
 
@@ -136,15 +139,7 @@ CREATE TABLE public.simulationdatapoint (
 	CONSTRAINT simulationdatapoint_quantity_fkey FOREIGN KEY (quantity) REFERENCES public.quantity("name"),
 	CONSTRAINT simulationdatapoint_run_id_machine_id_fkey FOREIGN KEY (run_id,machine_id) REFERENCES public.simulation(run_id,machine_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX simulationdatapoint_ts_idx ON public.simulationdatapoint USING btree (ts DESC);
-
--- Table Triggers
-
-create trigger ts_insert_blocker before
-insert
-    on
-    public.simulationdatapoint for each row execute function _timescaledb_internal.insert_blocker();
-
+SELECT create_hypertable('public.simulationdatapoint', 'ts');
 
 -- public.totalnormalizedeuclideandistance definition
 
@@ -181,14 +176,7 @@ CREATE TABLE public.trajectory (
 	CONSTRAINT trajectory_quantity_fkey FOREIGN KEY (quantity) REFERENCES public.quantity("name"),
 	CONSTRAINT trajectory_run_id_machine_id_fkey FOREIGN KEY (run_id,machine_id) REFERENCES public.run(run_id,machine_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX trajectory_ts_idx ON public.trajectory USING btree (ts DESC);
-
--- Table Triggers
-
-create trigger ts_insert_blocker before
-insert
-    on
-    public.trajectory for each row execute function _timescaledb_internal.insert_blocker();
+SELECT create_hypertable('public.trajectory', 'ts');
 
 
 -- public.frequentistmetric definition
@@ -211,14 +199,7 @@ CREATE TABLE public.frequentistmetric (
 	CONSTRAINT frequentistmetric_quantity_fkey FOREIGN KEY (quantity) REFERENCES public.quantity("name"),
 	CONSTRAINT frequentistmetric_run_id_machine_id_fkey FOREIGN KEY (run_id,machine_id) REFERENCES public.run(run_id,machine_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX frequentistmetric_ts_idx ON public.frequentistmetric USING btree (ts DESC);
-
--- Table Triggers
-
-create trigger ts_insert_blocker before
-insert
-    on
-    public.frequentistmetric for each row execute function _timescaledb_internal.insert_blocker();
+SELECT create_hypertable('public.frequentistmetric', 'ts');
 
 
 -- public.globalfrequentistmetric definition
@@ -276,15 +257,7 @@ CREATE TABLE public.measurement (
 	CONSTRAINT measurement_quantity_fkey FOREIGN KEY (quantity) REFERENCES public.quantity("name"),
 	CONSTRAINT measurement_run_id_machine_id_fkey FOREIGN KEY (run_id,machine_id) REFERENCES public.run(run_id,machine_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX measurement_ts_idx ON public.measurement USING btree (ts DESC);
-CREATE INDEX measurement_ts_machine_id_quantity_run_id_idx ON public.measurement USING btree (ts, machine_id, quantity, run_id);
-
--- Table Triggers
-
-create trigger ts_insert_blocker before
-insert
-    on
-    public.measurement for each row execute function _timescaledb_internal.insert_blocker();
+SELECT create_hypertable('public.measurement', 'ts');
 
 
 -- public.normalizedeuclideandistance definition
@@ -304,15 +277,7 @@ CREATE TABLE public.normalizedeuclideandistance (
 	CONSTRAINT normalizedeuclideandistance_quantity_fkey FOREIGN KEY (quantity) REFERENCES public.quantity("name"),
 	CONSTRAINT normalizedeuclideandistance_run_id_machine_id_fkey FOREIGN KEY (run_id,machine_id) REFERENCES public.run(run_id,machine_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX normalizedeuclideandistance_ts_idx ON public.normalizedeuclideandistance USING btree (ts DESC);
-
--- Table Triggers
-
-create trigger ts_insert_blocker before
-insert
-    on
-    public.normalizedeuclideandistance for each row execute function _timescaledb_internal.insert_blocker();
-
+SELECT create_hypertable('public.normalizedeuclideandistance', 'ts');
 
 -- public.reliabilitymetric definition
 
@@ -332,14 +297,7 @@ CREATE TABLE public.reliabilitymetric (
 	CONSTRAINT reliabilitymetric_quantity_fkey FOREIGN KEY (quantity) REFERENCES public.quantity("name"),
 	CONSTRAINT reliabilitymetric_run_id_machine_id_fkey FOREIGN KEY (run_id,machine_id) REFERENCES public.run(run_id,machine_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX reliabilitymetric_ts_idx ON public.reliabilitymetric USING btree (ts DESC);
-
--- Table Triggers
-
-create trigger ts_insert_blocker before
-insert
-    on
-    public.reliabilitymetric for each row execute function _timescaledb_internal.insert_blocker();
+SELECT create_hypertable('public.reliabilitymetric', 'ts');
 
 
 -- public.rootmeansquarederror definition
@@ -359,11 +317,4 @@ CREATE TABLE public.rootmeansquarederror (
 	CONSTRAINT rootmeansquarederror_quantity_fkey FOREIGN KEY (quantity) REFERENCES public.quantity("name"),
 	CONSTRAINT rootmeansquarederror_run_id_machine_id_fkey FOREIGN KEY (run_id,machine_id) REFERENCES public.run(run_id,machine_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE INDEX rootmeansquarederror_ts_idx ON public.rootmeansquarederror USING btree (ts DESC);
-
--- Table Triggers
-
-create trigger ts_insert_blocker before
-insert
-    on
-    public.rootmeansquarederror for each row execute function _timescaledb_internal.insert_blocker();
+SELECT create_hypertable('public.rootmeansquarederror', 'ts');

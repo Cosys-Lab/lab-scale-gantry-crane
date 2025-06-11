@@ -2,27 +2,23 @@ version: '3.8'
 
 services:
   timescaledb:
-    image: timescale/timescaledb:latest-pg17
+    image: timescaledb-student-backup
     container_name: timescaledb
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: gantrycrane
     ports:
       - "5432:5432"
-    volumes:
-      - timescaledb-data:/var/lib/postgresql/data
-      - ./postgres-init-scripts:/docker-entrypoint-initdb.d
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana-student-backup
     container_name: grafana
     restart: unless-stopped
+    user: "${UID}"
     ports:
       - "3000:3000"
     volumes:
-      - grafana-data:/var/lib/grafana
+      - ./grafana-data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -31,17 +27,12 @@ services:
       - mosquitto
 
   mosquitto:
-    build: ./mosquitto-with-config
+    image: eclipse-mosquitto
     container_name: mosquitto
     restart: unless-stopped
     ports:
       - "1883:1883"
     volumes:
-      - mosquitto-data:/mosquitto/data
-      - mosquitto-log:/mosquitto/log
-
-volumes:
-  timescaledb-data:
-  grafana-data:
-  mosquitto-data:
-  mosquitto-log:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/log:/mosquitto/log
+      - ./mosquitto/data:/mosquitto/data
