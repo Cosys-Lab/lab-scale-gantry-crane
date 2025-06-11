@@ -1,0 +1,2355 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Harbour vizualisation of boat and quay using canvas panels",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 3,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "empty": {
+                  "color": "#cccccc",
+                  "index": 0
+                },
+                "fillable": {
+                  "color": "yellow",
+                  "index": 2
+                },
+                "filled": {
+                  "color": "green",
+                  "index": 1
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 10,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "infinitePan": false,
+        "inlineEditing": true,
+        "panZoom": false,
+        "root": {
+          "background": {
+            "color": {
+              "fixed": "transparent"
+            },
+            "image": {
+              "fixed": "img/bg/quay2.png",
+              "mode": "fixed"
+            }
+          },
+          "border": {
+            "color": {
+              "fixed": "dark-green"
+            }
+          },
+          "constraint": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "elements": [
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-0",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-0",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "connections": [],
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 0",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 152,
+                "top": 416,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-1",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-1",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 1",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 152,
+                "top": 328,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-2",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-2",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 2",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 151,
+                "top": 239,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-3",
+                  "fixed": "#D9D9D9"
+                },
+                "image": {
+                  "mode": "fixed"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-3",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 3",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 266,
+                "top": 419,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-6",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-6",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 6",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 381,
+                "top": 419,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-9",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-9",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 9",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 496,
+                "top": 419,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-12",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-12",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 12",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 611,
+                "top": 419,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-4",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-4",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 4",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 266,
+                "top": 329,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-5",
+                  "fixed": "#D9D9D9"
+                },
+                "image": {
+                  "field": "slot-state-5",
+                  "mode": "fixed"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-5",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 5",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 266,
+                "top": 239,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-7",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-7",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 7",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 381,
+                "top": 329,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-8",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-8",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 8",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 381,
+                "top": 239,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-10",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-10",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 10",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 496,
+                "top": 329,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-11",
+                  "fixed": "#D9D9D9"
+                },
+                "image": {
+                  "mode": "fixed"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-11",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 11",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 496,
+                "top": 239,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-13",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-13",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 13",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 611,
+                "top": 329,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-14",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "container-id-14",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 14",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 611,
+                "top": 239,
+                "width": 100
+              },
+              "type": "rectangle"
+            }
+          ],
+          "name": "Element 1726763203928",
+          "oneClickMode": "off",
+          "placement": {
+            "height": 100,
+            "left": 0,
+            "top": 0,
+            "width": 100
+          },
+          "type": "frame"
+        },
+        "showAdvancedTypes": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT slot, state FROM quay where machine_id = $id ORDER BY slot LIMIT 50 ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "slot",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "state",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": [
+                  "slot"
+                ],
+                "type": "string"
+              },
+              "type": "property"
+            }
+          },
+          "table": "quay"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT slot, container_id FROM quay where machine_id = $id ORDER BY slot LIMIT 50 ",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "slot",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "container_id",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": [
+                  "slot"
+                ],
+                "type": "string"
+              },
+              "type": "property"
+            }
+          },
+          "table": "quay"
+        }
+      ],
+      "title": "Panel Title",
+      "transformations": [
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          },
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "slot",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "state",
+                "handlerKey": "field.value"
+              }
+            ]
+          },
+          "topic": "series"
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "(\\d*)",
+            "renamePattern": "slot-state-$1"
+          }
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "B"
+          },
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "slot",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "container_id",
+                "handlerKey": "field.value"
+              }
+            ]
+          },
+          "topic": "series"
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "(\\d*)",
+            "renamePattern": "container-id-$1"
+          }
+        }
+      ],
+      "type": "canvas"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed"
+          },
+          "mappings": [
+            {
+              "options": {
+                "empty": {
+                  "color": "#cccccc",
+                  "index": 0
+                },
+                "fillable": {
+                  "color": "yellow",
+                  "index": 1
+                },
+                "filled": {
+                  "color": "green",
+                  "index": 2
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 9,
+        "x": 10,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "infinitePan": false,
+        "inlineEditing": true,
+        "panZoom": false,
+        "root": {
+          "background": {
+            "color": {
+              "fixed": "transparent"
+            },
+            "image": {
+              "fixed": "img/bg/boat-hull2.png",
+              "mode": "fixed"
+            }
+          },
+          "border": {
+            "color": {
+              "fixed": "#24292e"
+            },
+            "width": 0
+          },
+          "constraint": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "elements": [
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-6",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-6",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 6",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 265,
+                "top": 309,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "1",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-1",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 1",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 165,
+                "top": 309,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "0",
+                  "fixed": "#D9D9D9"
+                },
+                "image": {
+                  "field": "0",
+                  "mode": "fixed"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-0",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 0",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 165,
+                "top": 399,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "2",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-2",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 2",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 165,
+                "top": 219,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "3",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-3",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 3",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 165,
+                "top": 129,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-4",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-4",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 4",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 165,
+                "top": 39,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-7",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-7",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 7",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 265,
+                "top": 219,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-8",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-8",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot8",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 265,
+                "top": 129,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-9",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-9",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 9",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 265,
+                "top": 39,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-5",
+                  "fixed": "#D9D9D9"
+                },
+                "image": {
+                  "field": "slot-state-5",
+                  "mode": "fixed"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-5",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 5",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 265,
+                "top": 399,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-10",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-10",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 10",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 365,
+                "top": 399,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-11",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-11",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 11",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 365,
+                "top": 309,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-12",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-12",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 12",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 365,
+                "top": 219,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-13",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-13",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 13",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 365,
+                "top": 129,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-14",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-14",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 14",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 365,
+                "top": 39,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-15",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-15",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 15",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 465,
+                "top": 399,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-20",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-20",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 20",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 565,
+                "top": 399,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-16",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-16",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot16",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 465,
+                "top": 309,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-21",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-21",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot21",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 565,
+                "top": 309,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-17",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-17",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 17",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 465,
+                "top": 219,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-22",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-22",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot22",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 565,
+                "top": 219,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-18",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-18",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 18",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 465,
+                "top": 129,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-23",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-23",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot23",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 565,
+                "top": 129,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-19",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-19",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 19",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 465,
+                "top": 39,
+                "width": 100
+              },
+              "type": "rectangle"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "slot-state-24",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "#1e5616"
+                },
+                "width": 1
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "text": {
+                  "field": "slot-id-24",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "slot 24",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 90,
+                "left": 565,
+                "top": 39,
+                "width": 100
+              },
+              "type": "rectangle"
+            }
+          ],
+          "name": "Element 1726742530365",
+          "oneClickMode": "off",
+          "placement": {
+            "height": 100,
+            "left": 0,
+            "top": 0,
+            "width": 100
+          },
+          "type": "frame"
+        },
+        "showAdvancedTypes": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT slot, state FROM cargomanifest where ship_id = $id ORDER BY slot LIMIT 50 ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "slot",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "state",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": [
+                  "slot"
+                ],
+                "type": "string"
+              },
+              "type": "property"
+            }
+          },
+          "table": "cargomanifest"
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT slot, container_id FROM cargomanifest where ship_id = $id ORDER BY slot LIMIT 50 ",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "slot",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "container_id",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": [
+                  "slot"
+                ],
+                "type": "string"
+              },
+              "type": "property"
+            }
+          },
+          "table": "cargomanifest"
+        }
+      ],
+      "title": "Boat State",
+      "transformations": [
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          },
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "slot",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "state",
+                "handlerKey": "field.value"
+              }
+            ]
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": ""
+          },
+          "id": "renameByRegex",
+          "options": {
+            "regex": "(\\d*)",
+            "renamePattern": "slot-state-$1"
+          },
+          "topic": "series"
+        },
+        {
+          "filter": {
+            "id": "byRefId",
+            "options": "B"
+          },
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "slot",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "container_id",
+                "handlerKey": "field.value"
+              }
+            ]
+          },
+          "topic": "series"
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "(\\d*)",
+            "renamePattern": "slot-id-$1"
+          }
+        }
+      ],
+      "type": "canvas"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 5,
+          "min": -5,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": -2
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 19,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select roll from ship where id = $id;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Roll",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 0,
+          "min": 10,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 4,
+        "x": 19,
+        "y": 6
+      },
+      "id": 5,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select draft from ship where id = $id;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Draft",
+      "type": "bargauge"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "1",
+          "value": "1"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+        },
+        "definition": "select machine_id from machine;",
+        "description": "Id to differentiate between the harbours of the different groups",
+        "hide": 0,
+        "includeAll": false,
+        "label": "id",
+        "multi": false,
+        "name": "id",
+        "options": [],
+        "query": "select machine_id from machine;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "harbour-viz",
+  "uid": "cdyd1y28nz94we",
+  "version": 26,
+  "weekStart": ""
+}

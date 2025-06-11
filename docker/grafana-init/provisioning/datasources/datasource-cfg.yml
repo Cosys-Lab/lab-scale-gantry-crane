@@ -1,0 +1,20 @@
+apiVersion: 1
+
+datasources:
+  - name: TimescaleDB
+    type: postgres
+    uid: a8901cb9-82e1-49a1-9c5a-de9c42cdc679
+    url: timescaledb:5432
+    user: postgres
+    secureJsonData:
+      password: postgres
+    jsonData:
+      database: gantrycrane
+      sslmode: "disable"
+      maxOpenConns: 100
+      maxIdleConns: 100
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      postgresVersion: 1700
+      timescaledb: true
+    isDefault: true

@@ -1,0 +1,2736 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Dashboard for the gantrycrane validation demo",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 2,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9,
+      "panels": [],
+      "title": "Traces over time",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Simulation maximum"
+            },
+            "properties": [
+              {
+                "id": "custom.fillBelowTo",
+                "value": "Simulation minimum"
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 20
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Simulation minimum"
+            },
+            "properties": [
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "repeat": "quantity",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT ts, value as \"Real-world measurement\"\r\nFROM measurement \r\nWHERE machine_id = $machine_id \r\n  AND quantity = $quantity \r\n  AND run_id = $run_id;",
+          "refId": "experiment",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT ts, \r\nMIN(value) as \"Simulation minimum\", \r\nMAX(value) as \"Simulation maximum\", \r\nAVG(value) as \"Simulation average\"\r\nFROM simulationdatapoint\r\nWHERE machine_id = $machine_id \r\n  AND quantity = $quantity \r\n  AND run_id = $run_id \r\nGROUP BY ts;",
+          "refId": "simulation",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "select ts, value as \"target trajectory\"\r\nfrom trajectory \r\nWHERE machine_id = $machine_id \r\nand quantity = $quantity  \r\nand run_id = $run_id;",
+          "refId": "target",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "$quantity",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 3,
+      "panels": [],
+      "title": "Root-Mean-Square Error",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 4,
+          "mappings": [],
+          "max": 0.012,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              },
+              {
+                "color": "yellow",
+                "value": 0.006
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 22
+      },
+      "id": 103,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^avg$/",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT run_id, quantity, MIN(distance), AVG(distance), unit  \r\nFROM rootmeansquarederror, quantity \r\nwhere name = 'position' and quantity  = name and run_id = $run_id \r\nGROUP BY run_id, quantity, unit \r\nORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "position RMSE gauge",
+      "transformations": [
+        {
+          "disabled": true,
+          "id": "configFromData",
+          "options": {
+            "applyTo": {
+              "id": "byName",
+              "options": "run_id"
+            },
+            "configRefId": "A",
+            "mappings": [
+              {
+                "fieldName": "quantity",
+                "handlerKey": "field.name",
+                "reducerId": "lastNotNull"
+              },
+              {
+                "fieldName": "run_id",
+                "handlerKey": "__ignore"
+              },
+              {
+                "fieldName": "'position' avg",
+                "handlerKey": "field.value"
+              },
+              {
+                "fieldName": "max",
+                "handlerKey": "__ignore"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 0.04,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              },
+              {
+                "color": "yellow",
+                "value": 0.02
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 22
+      },
+      "id": 110,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^avg$/",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT run_id, quantity, MIN(distance), AVG(distance), unit  \r\nFROM rootmeansquarederror, quantity \r\nwhere name = 'velocity' and quantity  = name and run_id = $run_id \r\nGROUP BY run_id, quantity, unit \r\nORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "velocity RMSE gauge",
+      "transformations": [
+        {
+          "disabled": true,
+          "id": "configFromData",
+          "options": {
+            "applyTo": {
+              "id": "byName",
+              "options": "run_id"
+            },
+            "configRefId": "A",
+            "mappings": [
+              {
+                "fieldName": "quantity",
+                "handlerKey": "field.name",
+                "reducerId": "lastNotNull"
+              },
+              {
+                "fieldName": "run_id",
+                "handlerKey": "__ignore"
+              },
+              {
+                "fieldName": "'position' avg",
+                "handlerKey": "field.value"
+              },
+              {
+                "fieldName": "max",
+                "handlerKey": "__ignore"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 0.08,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              },
+              {
+                "color": "yellow",
+                "value": 0.04
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 22
+      },
+      "id": 111,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^avg$/",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT run_id, quantity, MIN(distance), AVG(distance), unit  \r\nFROM rootmeansquarederror, quantity \r\nwhere name = 'angular position' and quantity  = name and run_id = $run_id \r\nGROUP BY run_id, quantity, unit \r\nORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "angular position RMSE gauge",
+      "transformations": [
+        {
+          "disabled": true,
+          "id": "configFromData",
+          "options": {
+            "applyTo": {
+              "id": "byName",
+              "options": "run_id"
+            },
+            "configRefId": "A",
+            "mappings": [
+              {
+                "fieldName": "quantity",
+                "handlerKey": "field.name",
+                "reducerId": "lastNotNull"
+              },
+              {
+                "fieldName": "run_id",
+                "handlerKey": "__ignore"
+              },
+              {
+                "fieldName": "'position' avg",
+                "handlerKey": "field.value"
+              },
+              {
+                "fieldName": "max",
+                "handlerKey": "__ignore"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 0.8,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              },
+              {
+                "color": "yellow",
+                "value": 0.4
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 22
+      },
+      "id": 112,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^avg$/",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT run_id, quantity, MIN(distance), AVG(distance), unit  \r\nFROM rootmeansquarederror, quantity \r\nwhere name = 'angular velocity' and quantity  = name and run_id = $run_id \r\nGROUP BY run_id, quantity, unit \r\nORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "angular velocity RMSE gauge",
+      "transformations": [
+        {
+          "disabled": true,
+          "id": "configFromData",
+          "options": {
+            "applyTo": {
+              "id": "byName",
+              "options": "run_id"
+            },
+            "configRefId": "A",
+            "mappings": [
+              {
+                "fieldName": "quantity",
+                "handlerKey": "field.name",
+                "reducerId": "lastNotNull"
+              },
+              {
+                "fieldName": "run_id",
+                "handlerKey": "__ignore"
+              },
+              {
+                "fieldName": "'position' avg",
+                "handlerKey": "field.value"
+              },
+              {
+                "fieldName": "max",
+                "handlerKey": "__ignore"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false,
+            "minWidth": 75
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "blue"
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "avg"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge",
+                  "valueDisplayMode": "color"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT run_id, quantity, MIN(distance), MAX(distance), AVG(distance), unit  FROM rootmeansquarederror, quantity where quantity  = name GROUP BY run_id, quantity, unit ORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+          "refId": "rmse",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "run_id",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "name": "AVG",
+                "parameters": [
+                  {
+                    "name": "distance",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "quantity",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "name": "run_id",
+                  "type": "string"
+                },
+                "type": "groupBy"
+              },
+              {
+                "property": {
+                  "name": "quantity",
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": "run_id",
+                "type": "string"
+              },
+              "type": "property"
+            },
+            "orderByDirection": "ASC",
+            "whereJsonTree": {
+              "children1": [],
+              "id": "b8b8988b-89ab-4cde-b012-3189d4ebd960",
+              "type": "group"
+            }
+          },
+          "table": "rootmeansquarederror"
+        }
+      ],
+      "title": "Root-Mean-Square Error ",
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "configRefId": "rmse",
+            "mappings": [
+              {
+                "fieldName": "min",
+                "handlerKey": "min",
+                "reducerId": "min"
+              },
+              {
+                "fieldName": "max",
+                "handlerKey": "max",
+                "reducerId": "max"
+              },
+              {
+                "fieldName": "unit",
+                "handlerKey": "__ignore"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "'position'.*"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "blue"
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.006
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "'velocity'.*"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "blue"
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.02
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "'angular position'.*"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "blue"
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.04
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "'angular velocity'.*"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "blue"
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.4
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "'position' RMSE"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 6,
+        "x": 0,
+        "y": 41
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "repeat": "quantity",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT ts, quantity, distance as \"$quantity RMSE\", unit FROM rootmeansquarederror, quantity WHERE quantity = $quantity and run_id = $run_id and quantity = name;",
+          "refId": "RMSE",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "$quantity RMSE",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 63
+      },
+      "id": 23,
+      "panels": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "fixedColor": "blue",
+                "mode": "fixed"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "line"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "'position'.*"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "blue"
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 1.5
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "'position' Normalized Euclidean distance"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "'velocity'.*"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "blue"
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 4.4
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "'angular position'.*"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "blue"
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 5.4
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "'angular velocity'.*"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "blue"
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 5.5
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 6,
+            "x": 0,
+            "y": 13
+          },
+          "id": 30,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "repeat": "quantity",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT ts, quantity, distance as \"$quantity Normalized Euclidean distance\", unit FROM normalizedeuclideandistance, quantity WHERE quantity = $quantity and run_id = $run_id and quantity = name;",
+              "refId": "RMSE",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "$quantity Normalized Euclidean Distance",
+          "transformations": [],
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 3,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1.5
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 0,
+            "y": 24
+          },
+          "id": 122,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^avg$/",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT run_id, quantity, MIN(distance), Max(distance), AVG(distance), unit  \r\nFROM normalizedeuclideandistance, quantity \r\nwhere name = 'position' and quantity  = name and run_id = $run_id \r\nGROUP BY run_id, quantity, unit \r\nORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "position Normalized Euclidean gauge",
+          "transformations": [
+            {
+              "disabled": true,
+              "id": "configFromData",
+              "options": {
+                "applyTo": {
+                  "id": "byName",
+                  "options": "run_id"
+                },
+                "configRefId": "A",
+                "mappings": [
+                  {
+                    "fieldName": "quantity",
+                    "handlerKey": "field.name",
+                    "reducerId": "lastNotNull"
+                  },
+                  {
+                    "fieldName": "run_id",
+                    "handlerKey": "__ignore"
+                  },
+                  {
+                    "fieldName": "'position' avg",
+                    "handlerKey": "field.value"
+                  },
+                  {
+                    "fieldName": "max",
+                    "handlerKey": "max"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 8.8,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 4.4
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 6,
+            "y": 24
+          },
+          "id": 123,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^avg$/",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT run_id, quantity, MIN(distance), AVG(distance), unit  \r\nFROM normalizedeuclideandistance, quantity \r\nwhere name = 'velocity' and quantity  = name and run_id = $run_id \r\nGROUP BY run_id, quantity, unit \r\nORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "velocity Normalized Euclidean gauge",
+          "transformations": [
+            {
+              "disabled": true,
+              "id": "configFromData",
+              "options": {
+                "applyTo": {
+                  "id": "byName",
+                  "options": "run_id"
+                },
+                "configRefId": "A",
+                "mappings": [
+                  {
+                    "fieldName": "quantity",
+                    "handlerKey": "field.name",
+                    "reducerId": "lastNotNull"
+                  },
+                  {
+                    "fieldName": "run_id",
+                    "handlerKey": "__ignore"
+                  },
+                  {
+                    "fieldName": "'position' avg",
+                    "handlerKey": "field.value"
+                  },
+                  {
+                    "fieldName": "max",
+                    "handlerKey": "__ignore"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 10.8,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 5.4
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 12,
+            "y": 24
+          },
+          "id": 124,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^avg$/",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT run_id, quantity, MIN(distance), AVG(distance), unit  \r\nFROM normalizedeuclideandistance, quantity \r\nwhere name = 'angular position' and quantity  = name and run_id = $run_id \r\nGROUP BY run_id, quantity, unit \r\nORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "angular position Normalized Euclidean gauge",
+          "transformations": [
+            {
+              "disabled": true,
+              "id": "configFromData",
+              "options": {
+                "applyTo": {
+                  "id": "byName",
+                  "options": "run_id"
+                },
+                "configRefId": "A",
+                "mappings": [
+                  {
+                    "fieldName": "quantity",
+                    "handlerKey": "field.name",
+                    "reducerId": "lastNotNull"
+                  },
+                  {
+                    "fieldName": "run_id",
+                    "handlerKey": "__ignore"
+                  },
+                  {
+                    "fieldName": "'position' avg",
+                    "handlerKey": "field.value"
+                  },
+                  {
+                    "fieldName": "max",
+                    "handlerKey": "__ignore"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 11,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 5.5
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 18,
+            "y": 24
+          },
+          "id": 125,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^avg$/",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT run_id, quantity, MIN(distance), AVG(distance), unit  \r\nFROM normalizedeuclideandistance, quantity \r\nwhere name = 'angular velocity' and quantity  = name and run_id = $run_id \r\nGROUP BY run_id, quantity, unit \r\nORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "angular velocity Normalized Euclidean gauge",
+          "transformations": [
+            {
+              "disabled": true,
+              "id": "configFromData",
+              "options": {
+                "applyTo": {
+                  "id": "byName",
+                  "options": "run_id"
+                },
+                "configRefId": "A",
+                "mappings": [
+                  {
+                    "fieldName": "quantity",
+                    "handlerKey": "field.name",
+                    "reducerId": "lastNotNull"
+                  },
+                  {
+                    "fieldName": "run_id",
+                    "handlerKey": "__ignore"
+                  },
+                  {
+                    "fieldName": "'position' avg",
+                    "handlerKey": "field.value"
+                  },
+                  {
+                    "fieldName": "max",
+                    "handlerKey": "__ignore"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "left",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": true,
+                "inspect": false,
+                "minWidth": 75
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "blue"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 10
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "avg"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "mode": "gradient",
+                      "type": "gauge",
+                      "valueDisplayMode": "color"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 12,
+            "x": 0,
+            "y": 32
+          },
+          "id": 43,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "9.5.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT run_id, quantity, MIN(distance), MAX(distance), AVG(distance), unit  FROM normalizedeuclideandistance, quantity where quantity  = name GROUP BY run_id, quantity, unit ORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+              "refId": "rmse",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "run_id",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "name": "AVG",
+                    "parameters": [
+                      {
+                        "name": "distance",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "quantity",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "name": "run_id",
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  },
+                  {
+                    "property": {
+                      "name": "quantity",
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": "run_id",
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "orderByDirection": "ASC",
+                "whereJsonTree": {
+                  "children1": [],
+                  "id": "b8b8988b-89ab-4cde-b012-3189d4ebd960",
+                  "type": "group"
+                }
+              },
+              "table": "rootmeansquarederror"
+            }
+          ],
+          "title": "Normalized Euclidean Distance",
+          "transformations": [
+            {
+              "id": "configFromData",
+              "options": {
+                "configRefId": "rmse",
+                "mappings": [
+                  {
+                    "fieldName": "min",
+                    "handlerKey": "min",
+                    "reducerId": "min"
+                  },
+                  {
+                    "fieldName": "max",
+                    "handlerKey": "max",
+                    "reducerId": "max"
+                  },
+                  {
+                    "fieldName": "unit",
+                    "handlerKey": "__ignore"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "left",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": true,
+                "inspect": false,
+                "minWidth": 75
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "blue"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 10
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "avg"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "mode": "gradient",
+                      "type": "gauge",
+                      "valueDisplayMode": "color"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 12,
+            "x": 12,
+            "y": 32
+          },
+          "id": 61,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "9.5.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT run_id, quantity, MIN(distance), MAX(distance), AVG(distance), unit  FROM totalnormalizedeuclideandistance, quantity where quantity  = name GROUP BY run_id, quantity, unit ORDER BY run_id DESC, quantity ASC LIMIT 50 ",
+              "refId": "rmse",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "run_id",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "name": "AVG",
+                    "parameters": [
+                      {
+                        "name": "distance",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  },
+                  {
+                    "parameters": [
+                      {
+                        "name": "quantity",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "name": "run_id",
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  },
+                  {
+                    "property": {
+                      "name": "quantity",
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50,
+                "orderBy": {
+                  "property": {
+                    "name": "run_id",
+                    "type": "string"
+                  },
+                  "type": "property"
+                },
+                "orderByDirection": "ASC",
+                "whereJsonTree": {
+                  "children1": [],
+                  "id": "b8b8988b-89ab-4cde-b012-3189d4ebd960",
+                  "type": "group"
+                }
+              },
+              "table": "rootmeansquarederror"
+            }
+          ],
+          "title": "Total Normalized Euclidean Distance",
+          "transformations": [
+            {
+              "id": "configFromData",
+              "options": {
+                "configRefId": "rmse",
+                "mappings": [
+                  {
+                    "fieldName": "min",
+                    "handlerKey": "min",
+                    "reducerId": "min"
+                  },
+                  {
+                    "fieldName": "max",
+                    "handlerKey": "max",
+                    "reducerId": "max"
+                  },
+                  {
+                    "fieldName": "unit",
+                    "handlerKey": "__ignore"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "title": "Normalized Euclidean Distance",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 64
+      },
+      "id": 54,
+      "panels": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 11,
+            "w": 12,
+            "x": 0,
+            "y": 14
+          },
+          "id": 44,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "9.5.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "postgres",
+                "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "select run_id, quantity, distance\r\nfrom mahalanobisdistance\r\nWHERE machine_id = 1\r\norder by run_id DESC, quantity ASC\r\nLIMIT 50;",
+              "refId": "total normalized euclidean distance",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Mahalanobis Distance",
+          "type": "table"
+        }
+      ],
+      "title": "Mahalanobis Distance",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 65
+      },
+      "id": 62,
+      "panels": [],
+      "title": "Frequentist Metric",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 6,
+        "x": 0,
+        "y": 66
+      },
+      "id": 69,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "repeat": "quantity",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT ts, quantity, mu_lower, mu_upper, unit FROM frequentistmetric, quantity WHERE quantity = $quantity and run_id = $run_id and quantity = name;",
+          "refId": "RMSE",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "$quantity mean confidence bounds",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 6,
+        "x": 0,
+        "y": 88
+      },
+      "id": 79,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "repeat": "quantity",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT ts, quantity, error_lower, error_upper, unit FROM frequentistmetric, quantity WHERE quantity = $quantity and run_id = $run_id and quantity = name;",
+          "refId": "RMSE",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "$quantity error confidence bounds",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 110
+      },
+      "id": 95,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.5.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select run_id, quantity, average_relative_error, average_relative_confidence_indicator, maximum_relative_error\r\nfrom globalfrequentistmetric \r\nWHERE machine_id = 1\r\norder by run_id DESC, quantity ASC\r\nLIMIT 50;",
+          "refId": "total normalized euclidean distance",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Global Frequentist Metric",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "position",
+            "velocity",
+            "angular position",
+            "angular velocity"
+          ],
+          "value": [
+            "position",
+            "velocity",
+            "angular position",
+            "angular velocity"
+          ]
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+        },
+        "definition": "select name from quantity;",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "quantity",
+        "options": [],
+        "query": "select name from quantity;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "1",
+          "value": "1"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+        },
+        "definition": "select machine_id from machine where name = $machine;",
+        "description": "hidden variable for machine id",
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "machine_id",
+        "options": [],
+        "query": "select machine_id from machine where name = $machine;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+        },
+        "definition": "select run_id from run where machine_id = (select machine_id from machine where name = '$machine')",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "run_id",
+        "options": [],
+        "query": "select run_id from run where machine_id = (select machine_id from machine where name = '$machine')",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "group 2",
+          "value": "group 2"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+        },
+        "definition": "select name from machine;",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "machine",
+        "options": [],
+        "query": "select name from machine;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "30",
+          "value": "30"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+        },
+        "definition": "select num_replications from simulation where machine_id = $machine_id and run_id = $run_id;",
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "num_replications",
+        "options": [],
+        "query": "select num_replications from simulation where machine_id = $machine_id and run_id = $run_id;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "a8901cb9-82e1-49a1-9c5a-de9c42cdc679"
+        },
+        "definition": "select replication_nr from simulationdatapoint where machine_id = $machine_id and run_id = $run_id;",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "replication_nr",
+        "options": [],
+        "query": "select replication_nr from simulationdatapoint where machine_id = $machine_id and run_id = $run_id;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "2023-06-19T14:13:09.565Z",
+    "to": "2023-06-19T14:13:20.442Z"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "gantrycrane",
+  "uid": "f897b970-0e3f-45bf-aa59-02cdbd45d9e2",
+  "version": 162,
+  "weekStart": ""
+}
