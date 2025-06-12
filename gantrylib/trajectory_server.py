@@ -1,8 +1,9 @@
+from unittest.mock import Mock
 import paho.mqtt.client as mqtt
 import pickle
 import json
 import logging
-from gantrylib.trajectory_generator import TrajectoryGenerator
+from gantrylib.trajectory_generator import TrajectoryGenerator, MockTrajectoryGenerator
 
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
@@ -10,9 +11,12 @@ REQUEST_TOPIC = "trajectory/request"
 
 logging.basicConfig(level=logging.INFO)
 
-class TrajectoryMQTTServer:
-    def __init__(self, config, broker=MQTT_BROKER, port=MQTT_PORT):
-        self.generator = TrajectoryGenerator(config)
+class MQTTTrajectoryServer:
+    def __init__(self, config, broker=MQTT_BROKER, port=MQTT_PORT, mock=False):
+        if mock:
+            self.generator = MockTrajectoryGenerator(config)
+        else:
+            self.generator = TrajectoryGenerator(config)
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -58,5 +62,5 @@ if __name__ == "__main__":
         "cart velocity limit": 2.0,
         "rope angle limit": 1.57
     }
-    server = TrajectoryMQTTServer(config)
+    server = MQTTTrajectoryServer(config)
     server.serve_forever()

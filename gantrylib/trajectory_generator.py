@@ -288,7 +288,7 @@ class MockTrajectoryGenerator(AbstractTrajectoryGenerator):
     def __init__(self, *args, **kwargs):
         pass
 
-    def generateTrajectory(self, start, stop):
+    def generateTrajectory(self, start, stop, method=None):
         # Return dummy data
         ts = np.linspace(0, 1, 10)
         xs = np.linspace(start, stop, 10)
