@@ -17,7 +17,7 @@ class Crane:
     A class representing the gantrycrane.
     """
 
-    def __init__(self, gantryPort, hoistPort, angleUARTPort, gantryUARTPort, calibrated = False, I_max = 1) -> None:
+    def __init__(self, config: dict) -> None:
         """Initializes a Crane instance.
 
         Args:
@@ -30,14 +30,15 @@ class Crane:
         """
 
         # create motors
-        self.gantryStepper = GantryStepper(port=gantryPort, calibrated=calibrated, I_max= I_max)
-        self.hoistStepper = HoistStepper(port=hoistPort, calibrated=calibrated)
+        I_max = config["cart acceleration limit"] * 0.167 + 0.833
+        self.gantryStepper = GantryStepper(port=config["gantryPort"], calibrated=config["calibrated"], I_max=I_max)
+        self.hoistStepper = HoistStepper(port=config["hoistPort"], calibrated=config["calibrated"])
         # set waypoints to empty
         self.waypoints = []
 
         # create serial connections for logging, or None if no logging is needed.
-        if angleUARTPort is not None:
-            self.angleUART = serial.Serial(angleUARTPort, 115200)
+        if config["angleUARTPort"] is not None:
+            self.angleUART = serial.Serial(config["angleUARTPort"], 115200)
         else:
             self.angleUART = None
 

@@ -4,6 +4,7 @@ import pickle
 from threading import Event
 from typing_extensions import override
 import yaml
+from gantrylib.gantry_database_io_factory import GantryDatabaseFactory
 from gantrylib.trajectory_generator import TrajectoryGenerator
 import psycopg
 from datetime import timedelta, datetime
@@ -19,46 +20,33 @@ class GantryController():
     """A class representing a controller for the gantry crane
     """
 
-    def __init__(self, properties_file) -> None:
+    def __init__(self, config: dict) -> None:
         """Initialize a GantryController instance
 
         Args:
-            properties_file (string): path to a properties file that holds details of the gantrycrane.
+            config (dict): Configuration dictionary holding details of the gantry crane.
         """
 
-        # load properties file
-        with open(properties_file, 'r') as f:
-            props = yaml.safe_load(f)
-            # machine identification in database
-            self.id = props["machine id"]
-            self.name = props["machine name"]
-            # connection to database
-            self.dbaddr = "host="+props["database address"]\
-                                    + " dbname=" + props["database name"]\
-                                    + " user=" + props["database user"]\
-                                    + " password=" + props["database password"]
-            self.connect_to_db = props["connect to db"]
-            if self.connect_to_db:
-                logging.info("Connecting to database")
-                self.dbconn = psycopg.connect(self.dbaddr)
-            else:
-                logging.info("Not connecting to database")
-                self.dbconn = None
-            self.simulatortopic = props["simulator topic"]
-            self.validatortopic = props["validator topic"]
-        
-        self.tg = TrajectoryGenerator(properties_file)
+        # machine identification in database
+        self.id = config["machine id"]
+        self.name = config["machine name"]
+        # connection to database
+        if config["connect to db"]:
+            logging.info("Connecting to database")
+            self.dbconn = GantryDatabaseFactory.create_database("postgres", config)
+            self.dbconn.connect()
+        else:
+            logging.info("Not connecting to database")
+            self.dbconn = GantryDatabaseFactory.create_database("none", config)
 
-        if self.dbconn:
-            with self.dbconn.cursor() as cur:
-                cur.execute("SELECT MAX(run_id) FROM run WHERE machine_id = 1;")
-                try:
-                    self.run = cur.fetchall()[0][0] + 1
-                except Exception:
-                    # if an exception occurs, there simply aren't any runs yet.
-                    # so add run number 0.
-                    self.run = 0
-        self.repls = props["replications"]
+        self.simulatortopic = config["simulator topic"]
+        self.validatortopic = config["validator topic"]
+
+        self.tg = TrajectoryGenerator(config)
+
+        self.run = self.dbconn.get_next_run_id(self.id)
+
+        self.repls = config["replications"]
 
         logging.info("Initialized " + str(self))
 
@@ -84,7 +72,7 @@ class GantryController():
             traceback (TracebackType or None): The traceback object if an exception was raised, else None.
         """
         try:
-            self.dbconn.close()
+            self.dbconn.disconnect()
         except Exception:
             pass
     
@@ -136,6 +124,21 @@ class GantryController():
         sleep(1.5) # sleep needed for initialization of the Arduino
         # TODO: check if the sleep is still needed? I don't think it is.
         logging.info("Trajectory generated")
+
+        
+        logging.info("Executing trajectory")
+        t_start = datetime.now()
+        measurement = self.executeTrajectory(traj)
+        logging.info("Trajectory executed, updating position")
+        self.position = measurement[1][-1]
+        # align measurement to trajectory for storing
+        measurement = self._align_measurement_to_trajectory(traj, measurement)
+
+        # update traj en measurement to have timestamps in datetime format for db
+        traj[0] = [t_start + timedelta(seconds=t) for t in traj[0]]
+        measurement[0] = [t_start + timedelta(seconds=t) for t in measurement[0]]
+        logging.info("Trajectory and measurement timestamps updated")
+
         if write_to_db:
             self._updateRunNumber()
             logging.info("Run number updated to " + str(self.run))
@@ -148,13 +151,6 @@ class GantryController():
             self.notifySimulator()
             logging.info("Simulator notified")
         
-        logging.info("Executing trajectory")
-        measurement = self.executeTrajectory(traj)
-        logging.info("Trajectory executed, updating position")
-        self.position = measurement[1][-1]
-        # align measurement to trajectory for storing
-        measurement = self._align_measurement_to_trajectory(traj, measurement)
-        
         if write_to_db:
             logging.info("Storing measurement in database")
             self.storeMeasurement(measurement)
@@ -166,63 +162,7 @@ class GantryController():
             logging.info("Validator notified")
         
         logging.info("Trajectory executed")
-        return traj, measurement
-
-    def _updateRunNumber(self):
-        if self.dbconn:
-            with self.dbconn.cursor() as cur:
-                cur.execute("SELECT MAX(run_id) FROM run WHERE machine_id = 1;")
-                try:
-                    self.run = cur.fetchall()[0][0] + 1
-                except Exception:
-                    # if an exception occurs, there simply aren't any runs yet.
-                    # so add run number 0.
-                    self.run = 0
-        return self.run
-
-    def storeTrajectory(self, traj):
-        """Store a trajectory in the database
-
-        traj is assumed to be tuple as returned by generateTrajectory
-        format: (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas)
-        ts      : sample times of solution  [s]
-        xs      : positions of solution     [m]
-        dxs     : velocity of solution      [m/s]
-        ddxs    : acceleration of solution  [m/s^2]
-        thetas  : angular position of solution  [rad]
-        dthetas : angular velocity of solution  [rad/s]
-        ddthetas: angular acceleration of solution  [rad/s^2]
-        us      : input force acting on cart [N]
-
-        Args:
-            traj (tuple): Trajectory tuple as returned by the trajectory generator.
-        """        
-        if self.dbconn:
-            # the datetime stamps in the database require at least a year,
-            # month and day, given that it's required, I might as well
-            # store the trace with an offset from now, then you know
-            # when it was generated.
-            curr_time = datetime.min
-            ts = [curr_time + timedelta(seconds=ts) for ts in traj[0]]
-            with self.dbconn.cursor() as cur:
-                # create the run
-                cur.execute("INSERT INTO \
-                            run (run_id, machine_id, starttime) \
-                            VALUES (%s, %s, %s)",
-                            (self.run, self.id, datetime.now()))
-                # insert the data into trajectory
-                with cur.copy("COPY trajectory (ts, machine_id, run_id, quantity,\
-                            value) FROM stdin") as copy:
-                    # write all quantities
-                    quantities = ['position', 'velocity', 'acceleration',\
-                                'angular position', 'angular velocity',\
-                                    'angular acceleration', 'force']
-                    for idx, qty in enumerate(quantities, 1):
-                        for (t, data) in zip(ts, traj[idx]):
-                            copy.write_row((t, self.id, self.run, qty, data))
-            # commit to database
-            self.dbconn.commit()
-        return   
+        return traj, measurement   
 
     @abstractmethod
     def executeTrajectory(self, traj):
@@ -234,63 +174,6 @@ class GantryController():
             traj (tuple): Trajectory tuple as returned by the TrajectoryGenerator
         """
         pass
-
-    def storeMeasurement(self, measurement):
-        """Store a measurement in the database
-
-        measurement is assumed to be a tuple as returned by
-        executeTrajectory
-        format: (ts, x, v, a, theta, omega)
-        ts : timestamps [datetime format]
-        x : position [m]
-        v : velocity [m/s]
-        a : acceleration [m/s2]
-        theta : angular position [rad]
-        omega : angular velocity [rad/s]
-
-        Args:
-            measurement (tuple): Tuple as returned by executeTrajectory
-        """
-        # returned t needs to be in datetime format for writing to database
-        t0_datetime = datetime.min
-        t = [t0_datetime + timedelta(seconds=ts) for ts in measurement[0]]
-
-        with self.dbconn.cursor() as cur:
-            # insert the data into measurement
-            with cur.copy("COPY measurement (ts, machine_id, run_id, quantity,\
-                           value) FROM stdin") as copy:
-                # write all quantities
-                quantities = ['position', 'velocity', 'acceleration', 'angular position',\
-                              'angular velocity']
-                for idx, qty in enumerate(quantities, 1):
-                    for (ts, data) in zip(t, measurement[idx]):
-                        copy.write_row((ts, self.id, self.run, qty, data))
-        # commit to database
-        self.dbconn.commit()
-        return 
-
-    # deprecated, use moveOptimally instead
-    # def moveWithoutLog(self, target, generator='ocp'):
-    #     """Make a movement but don't log it to the database
-
-    #     Args:
-    #         target (float): target position in meters
-    #         generator (str, optional): Method of generation, either "ocp" or "lqr". Defaults to "ocp".
-
-    #     Returns:
-    #         tuple(tuple, tuple): A tuple containing the generated trajectory and the measured trajectory
-    #     """
-    #     # generate a trajectory to executs
-    #     # trajectory is a tuple of shape: (ts, xs, dxs, ddxs, thetas, dthetas, ddthetas, us)
-    #     traj = self.generateTrajectory(self.crane.gantryStepper.getPositionMm()/1000, target, generator)
-    #     logging.info(traj)
-    #     # execute the trajectory
-    #     # measurement is a tuple of shape (t, x, v, a, theta, omega)   
-    #     measurement = self.executeTrajectory(traj)
-    #     self.position = measurement[1][-1]
-    #     # align measurement to trajectory for storing
-    #     measurement = self._align_measurement_to_trajectory(traj, measurement)
-    #     return traj, measurement
     
     def moveTrajectoryWithoutLog(self, traj):
         """Move according to the given trajectory
@@ -546,29 +429,18 @@ class PhysicalGantryController(GantryController):
         return super().__exit__(exc_type, exc_value, traceback)
 
     @override
-    def connectToCrane(self, properties_file):
+    def connectToCrane(self, config: dict):
         """Connect to the physical crane.
 
         Args:
-            properties_file (string): The path to the properties file
+            config (dict): The configuration dictionary
 
         Returns:
             Crane: a Crane instance
-        """        
-        with open(properties_file, 'r+') as f:
-            props = yaml.safe_load(f)
-            # machine identification in database
-            gantryPort = props["gantryPort"]
-            hoistPort = props["hoistPort"]
-            angleUARTPort = props["angleUARTPort"]
-            # angleUARTPort = None
-            # gantryUARTPort = props["gantryUARTPort"]
-            gantryUARTPort = None
-            calibrated = props["calibrated"]
-            I_max = props["cart acceleration limit"] * 0.167 + 0.833
-            crane = Crane(gantryPort, hoistPort, angleUARTPort, gantryUARTPort, calibrated=bool(calibrated), I_max = I_max)
-            return crane
-    
+        """
+        crane = Crane(config)
+        return crane
+
     @override
     def executeTrajectory(self, traj):
         """Execute a trajectory on the crane.

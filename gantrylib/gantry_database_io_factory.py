@@ -1,6 +1,5 @@
 from enum import Enum
-from abc import ABC, abstractmethod
-from gantrylib.database_io import PostgresDatabase, DatabaseInterface
+from gantrylib.gantry_database_io import PostgresDatabase, DatabaseInterface, MockDatabase, NullDatabase
 
 class DatabaseType(Enum):
     """Enum defining supported database types"""
@@ -39,43 +38,3 @@ class GantryDatabaseFactory:
             return NullDatabase()
         else:
             raise ValueError(f"Unsupported database type: {db_type}")
-
-class MockDatabase(DatabaseInterface):
-    """Mock database implementation for testing"""
-    def connect(self):
-        pass
-
-    def disconnect(self):
-        pass
-
-    def get_next_run_id(self, machine_id: int) -> int:
-        return 0
-
-    def store_run(self, run_id: int, machine_id: int, start_time):
-        pass
-
-    def store_trajectory(self, machine_id: int, run_id: int, trajectory: tuple):
-        pass
-
-    def store_measurement(self, machine_id: int, run_id: int, measurement: tuple):
-        pass
-
-class NullDatabase(DatabaseInterface):
-    """Null object pattern implementation for when no database is needed"""
-    def connect(self):
-        pass
-
-    def disconnect(self):
-        pass
-
-    def get_next_run_id(self, machine_id: int) -> int:
-        return 0
-
-    def store_run(self, run_id: int, machine_id: int, start_time):
-        pass
-
-    def store_trajectory(self, machine_id: int, run_id: int, trajectory: tuple):
-        pass
-
-    def store_measurement(self, machine_id: int, run_id: int, measurement: tuple):
-        pass

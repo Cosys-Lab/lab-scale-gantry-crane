@@ -69,6 +69,8 @@ class PostgresDatabase(DatabaseInterface):
             try:
                 run_id = cur.fetchall()[0][0] + 1
             except Exception:
+                # if an exception occurs, there simply aren't any runs yet.
+                # so add run number 0.
                 run_id = 0
         return run_id
 
@@ -87,16 +89,13 @@ class PostgresDatabase(DatabaseInterface):
         if not self.conn:
             return
 
-        curr_time = datetime.min
-        ts = [curr_time + timedelta(seconds=t) for t in trajectory[0]]
-        
         with self.conn.cursor() as cur:
             with cur.copy("COPY trajectory (ts, machine_id, run_id, quantity, value) FROM stdin") as copy:
                 quantities = ['position', 'velocity', 'acceleration', 
                             'angular position', 'angular velocity',
                             'angular acceleration', 'force']
                 for idx, qty in enumerate(quantities, 1):
-                    for (t, data) in zip(ts, trajectory[idx]):
+                    for (t, data) in zip(trajectory[0], trajectory[idx]):
                         copy.write_row((t, machine_id, run_id, qty, data))
         self.conn.commit()
 
@@ -104,14 +103,51 @@ class PostgresDatabase(DatabaseInterface):
         if not self.conn:
             return
 
-        t0_datetime = datetime.min
-        t = [t0_datetime + timedelta(seconds=ts) for ts in measurement[0]]
-
         with self.conn.cursor() as cur:
             with cur.copy("COPY measurement (ts, machine_id, run_id, quantity, value) FROM stdin") as copy:
                 quantities = ['position', 'velocity', 'acceleration', 
                             'angular position', 'angular velocity']
                 for idx, qty in enumerate(quantities, 1):
-                    for (ts, data) in zip(t, measurement[idx]):
+                    for (ts, data) in zip(measurement[0], measurement[idx]):
                         copy.write_row((ts, machine_id, run_id, qty, data))
         self.conn.commit()
+
+class MockDatabase(DatabaseInterface):
+    """Mock database implementation for testing"""
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
+
+    def get_next_run_id(self, machine_id: int) -> int:
+        return 0
+
+    def store_run(self, run_id: int, machine_id: int, start_time):
+        pass
+
+    def store_trajectory(self, machine_id: int, run_id: int, trajectory: tuple):
+        pass
+
+    def store_measurement(self, machine_id: int, run_id: int, measurement: tuple):
+        pass
+
+class NullDatabase(DatabaseInterface):
+    """Null object pattern implementation for when no database is needed"""
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
+
+    def get_next_run_id(self, machine_id: int) -> int:
+        return 0
+
+    def store_run(self, run_id: int, machine_id: int, start_time):
+        pass
+
+    def store_trajectory(self, machine_id: int, run_id: int, trajectory: tuple):
+        pass
+
+    def store_measurement(self, machine_id: int, run_id: int, measurement: tuple):
+        pass
