@@ -2,7 +2,6 @@
 # based on stepper_config.py
 
 import struct
-import threading
 import time
 import numpy as np
 from gantrylib.motors import GantryStepper, HoistStepper
@@ -60,9 +59,6 @@ class Crane:
 
         self.angleZero = 0
         self.windZero = 0
-
-        # adding thread safety for the readAngle method
-        self._state_lock = threading.Lock()
 
     def __enter__(self):
         """Enter the runtime context for the crane.
@@ -257,32 +253,31 @@ class Crane:
         Returns:
             tuple(float, float): Tuple(theta, omega)
         """
-        with self._state_lock:
-            if self.angleUART is not None:
-                # Add incoming data to the buffer
-                self.buffer += bytearray(self.angleUART.read(self.angleUART.in_waiting))
+        if self.angleUART is not None:
+            # Add incoming data to the buffer
+            self.buffer += bytearray(self.angleUART.read(self.angleUART.in_waiting))
 
-                # find all matches in the buffer
-                matches = self.pattern.findall(self.buffer)
+            # find all matches in the buffer
+            matches = self.pattern.findall(self.buffer)
 
-                # check if a match was found
-                if matches:
-                    # Get the last match
-                    last = matches[-1]
+            # check if a match was found
+            if matches:
+                # Get the last match
+                last = matches[-1]
 
-                    # Unpack the bytes into floats
-                    floats = struct.unpack('<fff', last)
+                # Unpack the bytes into floats
+                floats = struct.unpack('<fff', last)
 
-                    # Remove the processed bytes from the buffer
-                    self.buffer = self.buffer.split(last)[-1]
-                    self.lastAngle = floats[0] - self.angleZero
-                    self.lastOmega = floats[1]
-                    self.lastwindspeed = floats[2] - self.windZero
-                    return self.lastAngle, self.lastOmega, self.lastwindspeed
-                else:
-                    return self.lastAngle, self.lastOmega, self.lastwindspeed
+                # Remove the processed bytes from the buffer
+                self.buffer = self.buffer.split(last)[-1]
+                self.lastAngle = floats[0] - self.angleZero
+                self.lastOmega = floats[1]
+                self.lastwindspeed = floats[2] - self.windZero
+                return self.lastAngle, self.lastOmega, self.lastwindspeed
             else:
-                return (0, 0, 0)
+                return self.lastAngle, self.lastOmega, self.lastwindspeed
+        else:
+            return (0, 0, 0)
         
     def moveCartVelocity(self, velocity):
         self.gantryStepper.moveVelocity(velocity)
@@ -306,13 +301,12 @@ class Crane:
         self.angleZero = angle + self.angleZero
 
     def getState(self):
-        with self._state_lock:
-            x_cart = self.gantryStepper.getPositionMm()
-            v_cart = self.gantryStepper.getVelocityMms()
-            x_hoist = self.hoistStepper.getPositionMm()
-            v_hoist = self.hoistStepper.getVelocityMms()
-            (theta, omega, wspeed) = self.readAngle()
-            return (x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed)
+        x_cart = self.gantryStepper.getPositionMm()
+        v_cart = self.gantryStepper.getVelocityMms()
+        x_hoist = self.hoistStepper.getPositionMm()
+        v_hoist = self.hoistStepper.getVelocityMms()
+        (theta, omega, wspeed) = self.readAngle()
+        return (x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed)
 
 
 class Waypoint():

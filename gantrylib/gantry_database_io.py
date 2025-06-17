@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import datetime
 import psycopg
 import logging
-import numpy as np
 
 class DatabaseInterface(ABC):
     """Abstract base class for database operations"""
@@ -37,12 +36,23 @@ class DatabaseInterface(ABC):
         """Store measurement data"""
         pass
 
+    @abstractmethod
+    def commit(self):
+        """Commit current transaction"""
+        pass
+
+    @abstractmethod
+    def cleanup_continuous_logging(self, start_time: datetime) -> None:
+        """Remove continuous logging data from start_time onwards"""
+        pass
+
 class PostgresDatabase(DatabaseInterface):
     """PostgreSQL implementation of DatabaseInterface"""
 
-    def __init__(self, host: str, dbname: str, user: str, password: str):
+    def __init__(self, host: str, dbname: str, user: str, password: str, auto_commit: bool = False):
         self.connection_string = f"host={host} dbname={dbname} user={user} password={password}"
         self.conn = None
+        self.auto_commit = auto_commit
 
     def connect(self):
         try:
@@ -83,7 +93,8 @@ class PostgresDatabase(DatabaseInterface):
                 "INSERT INTO run (run_id, machine_id, starttime) VALUES (%s, %s, %s)",
                 (run_id, machine_id, start_time)
             )
-        self.conn.commit()
+        if self.auto_commit:
+            self.conn.commit()
 
     def store_trajectory(self, machine_id: int, run_id: int, trajectory: tuple):
         if not self.conn:
@@ -97,7 +108,8 @@ class PostgresDatabase(DatabaseInterface):
                 for idx, qty in enumerate(quantities, 1):
                     for (t, data) in zip(trajectory[0], trajectory[idx]):
                         copy.write_row((t, machine_id, run_id, qty, data))
-        self.conn.commit()
+        if self.auto_commit:
+            self.conn.commit()
 
     def store_measurement(self, machine_id: int, run_id: int, measurement: tuple):
         if not self.conn:
@@ -110,7 +122,27 @@ class PostgresDatabase(DatabaseInterface):
                 for idx, qty in enumerate(quantities, 1):
                     for (ts, data) in zip(measurement[0], measurement[idx]):
                         copy.write_row((ts, machine_id, run_id, qty, data))
+        if self.auto_commit:
+            self.conn.commit()
+    
+    def commit(self):
         self.conn.commit()
+
+    def cleanup_continuous_logging(self, start_time: datetime, machine_id: int) -> None:
+        """Remove all measurements with run_id=0 from start_time onwards"""
+        if not self.conn:
+            return
+        
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """DELETE FROM measurement
+                   WHERE run_id = 0
+                   AND ts >= %s
+                   AND machine_id = %s""",
+                (start_time, machine_id)
+            )
+        if self.auto_commit:
+            self.conn.commit()
 
 class MockDatabase(DatabaseInterface):
     """Mock database implementation for testing"""
@@ -132,6 +164,12 @@ class MockDatabase(DatabaseInterface):
     def store_measurement(self, machine_id: int, run_id: int, measurement: tuple):
         pass
 
+    def commit(self):
+        pass
+
+    def cleanup_continuous_logging(self, start_time: datetime) -> None:
+        pass
+
 class NullDatabase(DatabaseInterface):
     """Null object pattern implementation for when no database is needed"""
     def connect(self):
@@ -150,4 +188,10 @@ class NullDatabase(DatabaseInterface):
         pass
 
     def store_measurement(self, machine_id: int, run_id: int, measurement: tuple):
+        pass
+
+    def commit(self):
+        pass
+
+    def cleanup_continuous_logging(self, start_time: datetime) -> None:
         pass
