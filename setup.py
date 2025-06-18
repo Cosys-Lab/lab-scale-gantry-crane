@@ -11,6 +11,7 @@ setup(
         "rockit-meco",
         "pytrinamic",
         "psycopg[binary]",
-        "typing-extensions"
+        "typing-extensions",
+        "paho-mqtt"
     ], 
 )

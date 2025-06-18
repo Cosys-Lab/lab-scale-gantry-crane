@@ -45,6 +45,7 @@ class CraneStateLogger(StateLoggerInterface):
         self.logging_thread = None
         self.writer_thread = None
         self.machine_id = machine_id
+        self.db_lock = threading.Lock()
 
     def __enter__(self):
         self.start_logging()
@@ -75,13 +76,16 @@ class CraneStateLogger(StateLoggerInterface):
         while not self.measurement_queue.empty():
             measurements.append(self.measurement_queue.get())
         if measurements:
-            try:
-                self.db_writer.store_state(self.machine_id, 0, measurements)
-            except Exception as e:
-                logging.error(f"Failed to write measurements to database: {e}")
+            with self.db_lock:
+                try:
+                    self.db_writer.store_state(self.machine_id, 0, measurements)
+                except Exception as e:
+                    logging.error(f"Failed to write measurements to database: {e}")
 
     def _logging_loop(self) -> None:
         """Main logging loop that captures crane state"""
+        sample_count = 0
+        start_run = time.time()
         while self.running.is_set():
             start_time = time.time()
             
@@ -103,29 +107,53 @@ class CraneStateLogger(StateLoggerInterface):
             elapsed = time.time() - start_time
             if elapsed < self.logging_interval:
                 time.sleep(self.logging_interval - elapsed)
+            else:
+                logging.warning("Logging loop took too long, skipping sleep")
+
+            sample_count += 1
+            if sample_count % 50 == 0:  # Log stats every 50 samples
+                elapsed = time.time() - start_run
+                actual_rate = sample_count / elapsed
+                logging.debug(f"Actual sampling rate: {actual_rate:.2f} Hz")
 
     def _writer_loop(self) -> None:
         """Main database writer loop"""
         measurements = []
-        last_write = time.time()
+        seen_timestamps = set()  # Track timestamps we've already processed
 
         while self.running.is_set():
-            current_time = time.time()
+            start_time = time.time()
             
             # Collect measurements from queue
             while not self.measurement_queue.empty():
-                measurements.append(self.measurement_queue.get())
+                measurement = self.measurement_queue.get()
+                ts = measurement[0]  # Get timestamp from measurement tuple
+
+                # Only add if we haven't seen this timestamp before
+                if ts not in seen_timestamps:
+                    measurements.append(measurement)
+                    seen_timestamps.add(ts)
+                else:
+                    logging.warning(f"Duplicate timestamp detected: {ts}")
 
             # Write to database if enough time has passed
-            if current_time - last_write >= self.write_interval and measurements:
-                try:          
-                    self.db_writer.store_state(self.machine_id, 0, measurements)
-                    measurements = []
-                    last_write = current_time
-                except Exception as e:
-                    logging.error(f"Failed to write measurements to database: {e}")
-
-            time.sleep(0.1)  # Prevent busy waiting
+            if measurements:
+                with self.db_lock:
+                    try:          
+                        self.db_writer.store_state(self.machine_id, 0, measurements)
+                        logging.debug(f"Wrote {len(measurements)} measurements to database")
+                        measurements = []
+                        seen_timestamps.clear()
+                    except Exception as e:
+                        logging.error(f"Failed to write measurements to database: {e}")
+                        
+            
+            # Sleep for remaining time to maintain writing rate
+            elapsed = time.time() - start_time
+            if elapsed < self.write_interval:
+                time.sleep(self.write_interval - elapsed)
+            else:
+                logging.warning("Writer loop took too long, skipping sleep")
     
     def pause(self) -> None:
         """Pause logging temporarily"""

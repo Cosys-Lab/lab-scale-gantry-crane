@@ -137,13 +137,18 @@ class PostgresDatabase(DatabaseInterface):
         
         state = tuple(map(list, zip(*state)))  # Convert list of tuples to tuple of lists for copy
 
-        with self.conn.cursor() as cur:
-            with cur.copy("COPY measurement (ts, machine_id, run_id, quantity, value) FROM stdin") as copy:
-                quantities = ['position', 'velocity', 'position vertical', 'velocity vertical',
-                            'angular position', 'angular velocity', 'windspeed']
-                for idx, qty in enumerate(quantities, 1):
-                    for (ts, data) in zip(state[0], state[idx]):
-                        copy.write_row((ts, machine_id, run_id, qty, data))
+        try:
+            with self.conn.cursor() as cur:
+                with cur.copy("COPY measurement (ts, machine_id, run_id, quantity, value) FROM stdin") as copy:
+                    quantities = ['position', 'velocity', 'position vertical', 'velocity vertical',
+                                'angular position', 'angular velocity', 'windspeed']
+                    for idx, qty in enumerate(quantities, 1):
+                        for (ts, data) in zip(state[0], state[idx]):
+                            copy.write_row((ts, machine_id, run_id, qty, data))
+        except Exception as e:
+            self.conn.rollback()
+            logging.error(f"Error storing state data: {e}")
+            
         if self.auto_commit:
             self.conn.commit()
 
