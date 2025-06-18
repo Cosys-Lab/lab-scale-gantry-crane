@@ -5,6 +5,9 @@ import time
 from datetime import datetime
 import logging
 
+from gantrylib.crane import Crane
+from gantrylib.gantry_database_io import DatabaseInterface
+
 
 class StateLoggerInterface(ABC):
     @abstractmethod
@@ -32,7 +35,7 @@ class StateLoggerInterface(ABC):
         pass
 
 class CraneStateLogger(StateLoggerInterface):
-    def __init__(self, crane, db_writer, logging_rate: float = 100.0, write_rate: float = 10.0, buffer_size: int = 1000):
+    def __init__(self, crane: Crane, db_writer: DatabaseInterface, logging_rate: float = 100.0, write_rate: float = 10.0, buffer_size: int = 1000, machine_id: int = 1) -> None:
         self.crane = crane
         self.db_writer = db_writer
         self.logging_interval = 1.0 / logging_rate
@@ -41,6 +44,7 @@ class CraneStateLogger(StateLoggerInterface):
         self.running = threading.Event()
         self.logging_thread = None
         self.writer_thread = None
+        self.machine_id = machine_id
 
     def __enter__(self):
         self.start_logging()
@@ -72,7 +76,7 @@ class CraneStateLogger(StateLoggerInterface):
             measurements.append(self.measurement_queue.get())
         if measurements:
             try:
-                self.db_writer.store_measurements(measurements, run_id=0)
+                self.db_writer.store_state(self.machine_id, 0, measurements)
             except Exception as e:
                 logging.error(f"Failed to write measurements to database: {e}")
 
@@ -83,19 +87,10 @@ class CraneStateLogger(StateLoggerInterface):
             
             try:
                 x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed = self.crane.getState()
-                timestamp = datetime.now()
+                ts = datetime.now()
 
-                measurement = {
-                    'timestamp': timestamp,
-                    'x_cart': x_cart,
-                    'v_cart': v_cart, 
-                    'x_hoist': x_hoist,
-                    'v_hoist': v_hoist,
-                    'theta': theta,
-                    'omega': omega,
-                    'windspeed': wspeed
-                }
-                
+                measurement = (ts, x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed)
+
                 if not self.measurement_queue.full():
                     self.measurement_queue.put(measurement)
                 else:
@@ -123,8 +118,8 @@ class CraneStateLogger(StateLoggerInterface):
 
             # Write to database if enough time has passed
             if current_time - last_write >= self.write_interval and measurements:
-                try:
-                    self.db_writer.store_measurements(measurements, run_id=0)
+                try:          
+                    self.db_writer.store_state(self.machine_id, 0, measurements)
                     measurements = []
                     last_write = current_time
                 except Exception as e:
@@ -146,7 +141,7 @@ class CraneStateLogger(StateLoggerInterface):
         """Remove all logged data from database"""
         if self.start_time:
             try:
-                self.db_writer.cleanup_continuous_logging(self.start_time)
+                self.db_writer.cleanup_continuous_logging(self.start_time, self.machine_id)
             except Exception as e:
                 logging.error(f"Failed to cleanup continuous logging data: {e}")
 

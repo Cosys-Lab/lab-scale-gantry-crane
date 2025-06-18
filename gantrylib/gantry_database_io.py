@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import List
 import psycopg
 import logging
 
@@ -37,12 +38,17 @@ class DatabaseInterface(ABC):
         pass
 
     @abstractmethod
+    def store_state(self, machine_id: int, run_id: int, state: tuple):
+        """Store state data"""
+        pass
+
+    @abstractmethod
     def commit(self):
         """Commit current transaction"""
         pass
 
     @abstractmethod
-    def cleanup_continuous_logging(self, start_time: datetime) -> None:
+    def cleanup_continuous_logging(self, start_time: datetime, machine_id: int) -> None:
         """Remove continuous logging data from start_time onwards"""
         pass
 
@@ -125,6 +131,22 @@ class PostgresDatabase(DatabaseInterface):
         if self.auto_commit:
             self.conn.commit()
     
+    def store_state(self, machine_id: int, run_id: int, state: tuple):
+        if not self.conn:
+            return
+        
+        state = tuple(map(list, zip(*state)))  # Convert list of tuples to tuple of lists for copy
+
+        with self.conn.cursor() as cur:
+            with cur.copy("COPY measurement (ts, machine_id, run_id, quantity, value) FROM stdin") as copy:
+                quantities = ['position', 'velocity', 'position vertical', 'velocity vertical',
+                            'angular position', 'angular velocity', 'windspeed']
+                for idx, qty in enumerate(quantities, 1):
+                    for (ts, data) in zip(state[0], state[idx]):
+                        copy.write_row((ts, machine_id, run_id, qty, data))
+        if self.auto_commit:
+            self.conn.commit()
+
     def commit(self):
         self.conn.commit()
 
@@ -167,7 +189,10 @@ class MockDatabase(DatabaseInterface):
     def commit(self):
         pass
 
-    def cleanup_continuous_logging(self, start_time: datetime) -> None:
+    def cleanup_continuous_logging(self, start_time: datetime, machine_id: int) -> None:
+        pass
+
+    def store_state(self, machine_id: int, run_id: int, state: tuple):
         pass
 
 class NullDatabase(DatabaseInterface):
@@ -193,5 +218,8 @@ class NullDatabase(DatabaseInterface):
     def commit(self):
         pass
 
-    def cleanup_continuous_logging(self, start_time: datetime) -> None:
+    def cleanup_continuous_logging(self, start_time: datetime, machine_id: int) -> None:
+        pass
+
+    def store_state(self, machine_id: int, run_id: int, state: tuple):
         pass

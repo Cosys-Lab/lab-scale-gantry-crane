@@ -70,5 +70,26 @@ class TestDatabaseIO(unittest.TestCase):
         self.pg_db.store_measurement(1, run_id, measurement)
         self.pg_db.disconnect()
 
+    def test_store_state(self):
+        self.pg_db.connect()
+        run_id = self.pg_db.get_next_run_id(1)
+        test_time = datetime.now()
+        self.pg_db.store_run(run_id, 1, test_time)
+
+        base_time = datetime.now()
+        state = [
+            (base_time + timedelta(seconds=0.1*i),  # timestamp
+             1.0 + i*0.1,  # position
+             0.1 + i*0.1,  # velocity
+             0.5 + i*0.1,  # position vertical
+             0.2 + i*0.1,  # velocity vertical
+             0.1 + i*0.1,  # angular position
+             0.01 + i*0.01,  # angular velocity
+             2.0 + i*0.1)  # windspeed
+            for i in range(3)
+        ]
+        self.pg_db.store_state(1, run_id, state)
+        self.pg_db.disconnect()
+
 if __name__ == '__main__':
     unittest.main()
