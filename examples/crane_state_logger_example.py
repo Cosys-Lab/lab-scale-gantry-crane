@@ -50,7 +50,7 @@ logger = CraneStateLogger(
 with logger as l:
     # l.start_logging() the context manager already calls this...
     start_time = time.time()
-    while time.time() - start_time < 5.0:
+    while time.time() - start_time < 20.0:
         queue_size = l.measurement_queue.qsize()
         if queue_size > 0:
             logging.debug(f"Queue size: {queue_size}")
