@@ -15,6 +15,7 @@ from gantrylib.crane import Crane, Waypoint
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import correlate
+from gantrylib.gantry_database_io_factory import DatabaseType
 
 class GantryController():
     """A class representing a controller for the gantry crane
@@ -33,11 +34,11 @@ class GantryController():
         # connection to database
         if config["connect to db"]:
             logging.info("Connecting to database")
-            self.dbconn = GantryDatabaseFactory.create_database("postgres", config)
+            self.dbconn = GantryDatabaseFactory.create_database(DatabaseType.POSTGRES, config)
             self.dbconn.connect()
         else:
             logging.info("Not connecting to database")
-            self.dbconn = GantryDatabaseFactory.create_database("none", config)
+            self.dbconn = GantryDatabaseFactory.create_database(DatabaseType.NONE, config)
 
         self.simulatortopic = config["simulator topic"]
         self.validatortopic = config["validator topic"]
@@ -319,6 +320,7 @@ class MockGantryController(GantryController):
             properties_file (string): path to a properties file
         """        
         super().__init__(properties_file)
+        
         self.position = 0
 
     def __enter__(self):
@@ -340,7 +342,7 @@ class MockGantryController(GantryController):
         return super().__exit__(exc_type, exc_value, traceback)
     
     @override
-    def connectToCrane(self):
+    def connectToCrane(self, config):
         """Connect to the mock crane. This is a no-op
 
         Returns:
