@@ -19,11 +19,11 @@ class CraneIOUC(ABC):
         self.angle_offset = 0.0
 
     @abstractmethod
-    def getStatus(self):
+    def getState(self):
         pass
 
     def zeroWind(self):
-        _, _, windspeed = self.getStatus()
+        _, _, windspeed = self.getState()
         self.wind_offset = windspeed + self.wind_offset
 
     def zeroAngle(self):
@@ -38,7 +38,7 @@ class MockCraneIOUC(CraneIOUC):
     def __init__(self):
         super().__init__()
 
-    def getStatus(self):
+    def getState(self):
         return (0.0, 0.0, 0.0)
 
 class SerialCraneIOUC(CraneIOUC):
@@ -49,8 +49,8 @@ class SerialCraneIOUC(CraneIOUC):
     def __init__(self, config: dict) -> None:
         super().__init__()
         # init serial variables
-        self.port = config["CraneIOUCPort"]
-        self.baudrate = config["CraneIOUCBaudrate"]
+        self.port = config["crane_IOUC_port"]
+        self.baudrate = config["crane_IOUC_baudrate"]
         self.pattern = re.compile(b'\x01(.{12})') # new pattern for bytearrays and uncompressed floats.
         self.packet_size = 13
         self.start_byte = 0x01
@@ -60,7 +60,7 @@ class SerialCraneIOUC(CraneIOUC):
         # open the connection
         self.conn = serial.Serial(self.port, self.baudrate)
 
-    def getStatus(self):
+    def getState(self):
         with self.get_status_lock:
             # Add incoming data to the buffer
             self.buffer += bytearray(self.conn.read(self.conn.in_waiting))

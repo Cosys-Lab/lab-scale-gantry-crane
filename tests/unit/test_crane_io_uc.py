@@ -1,7 +1,7 @@
 import struct
 import unittest
 from unittest.mock import patch, MagicMock
-from gantrylib.crane_io_uc import CraneIOUC, MockCraneIOUC, SerialCraneIOUC
+from gantrylib.crane_io_uc import MockCraneIOUC, SerialCraneIOUC
 
 class TestMockCraneIOUC(unittest.TestCase):
     def setUp(self):
@@ -80,6 +80,7 @@ class TestSerialCraneIOUC(unittest.TestCase):
         # Patch readAngle to return angle of 2.5
         uc.readAngle = MagicMock(return_value=(2.5, 0.0, 0.0))
         uc.zeroAngle()
+        uc.zeroWind()
         self.assertEqual(uc.angle_offset, 2.5)
 
 if __name__ == '__main__':

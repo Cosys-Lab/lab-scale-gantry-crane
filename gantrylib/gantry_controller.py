@@ -1,18 +1,11 @@
 from abc import abstractmethod
-from os import write
-import pickle
-from threading import Event
 from typing_extensions import override
-import yaml
 from gantrylib.gantry_database_io_factory import GantryDatabaseFactory
 from gantrylib.trajectory_generator import TrajectoryGenerator
-import psycopg
 from datetime import timedelta, datetime
 from time import sleep
 import logging
-import sys
-from gantrylib.crane import Crane, Waypoint
-import matplotlib.pyplot as plt
+from gantrylib.crane import PhysicalCrane, Waypoint
 import numpy as np
 from scipy.signal import correlate
 from gantrylib.gantry_database_io_factory import DatabaseType
@@ -29,10 +22,10 @@ class GantryController():
         """
 
         # machine identification in database
-        self.id = config["machine id"]
-        self.name = config["machine name"]
+        self.id = config["machine_id"]
+        self.name = config["machine_name"]
         # connection to database
-        if config["connect to db"]:
+        if config["connect_to_db"]:
             logging.info("Connecting to database")
             self.dbconn = GantryDatabaseFactory.create_database(DatabaseType.POSTGRES, config)
             self.dbconn.connect()
@@ -40,8 +33,8 @@ class GantryController():
             logging.info("Not connecting to database")
             self.dbconn = GantryDatabaseFactory.create_database(DatabaseType.NONE, config)
 
-        self.simulatortopic = config["simulator topic"]
-        self.validatortopic = config["validator topic"]
+        self.simulatortopic = config["simulator_topic"]
+        self.validatortopic = config["validator_topic"]
 
         self.tg = TrajectoryGenerator(config)
 
@@ -410,7 +403,7 @@ class PhysicalGantryController(GantryController):
         """        
         super().__init__(properties_file)
         self.crane = self.connectToCrane(properties_file)
-        self.position = self.crane.gantryStepper.getPositionMm()/1000
+        self.position = self.crane.cartStepper.getPositionMm()/1000
 
     def __enter__(self):
         """Enter the runtime context of the gantry controller.
@@ -440,7 +433,7 @@ class PhysicalGantryController(GantryController):
         Returns:
             Crane: a Crane instance
         """
-        crane = Crane(config)
+        crane = PhysicalCrane(config)
         return crane
 
     @override

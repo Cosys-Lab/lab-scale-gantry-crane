@@ -29,14 +29,14 @@ class TrajectoryGenerator(AbstractTrajectoryGenerator):
         Args:
             config (dict): A dictionary containing problem details.
         """
-        self.mp = config["pendulum mass"]
-        self.dp = config["pendulum damping"]
-        self.r = config["rope length"]
+        self.mp = config["pendulum_mass"]
+        self.dp = config["pendulum_damping"]
+        self.r = config["rope_length"]
         # self.a_cart_lim = props["cart acceleration limit"]
         self.a_cart_lim = 2.5
-        self.v_cart_lim = config["cart velocity limit"]
+        self.v_cart_lim = config["cart_velocity_limit"]
         # eval this since pi/2 is a string in the yaml
-        self.theta_lim = config["rope angle limit"]
+        self.theta_lim = config["rope_angle_limit"]
 
     def  generateTrajectory(self, start, stop, method='rockit'):
         if method == 'rockit':

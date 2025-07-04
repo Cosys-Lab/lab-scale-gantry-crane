@@ -26,10 +26,10 @@ class GantryDatabaseFactory:
         """
         if db_type == DatabaseType.POSTGRES:
             return PostgresDatabase(
-                host=config["database address"],
-                dbname=config["database name"],
-                user=config["database user"],
-                password=config["database password"]
+                host=config["db_address"],
+                dbname=config["db_name"],
+                user=config["db_user"],
+                password=config["db_password"]
             )
         elif db_type == DatabaseType.MOCK:
             # For testing purposes
