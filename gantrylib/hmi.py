@@ -2,10 +2,9 @@ import logging
 import tkinter as tk
 from tkinter import ttk
 import sys
-import threading
-import time
 
-from gantrylib.gantry_controller import MockGantryController, PhysicalGantryController
+from gantrylib.gantry_controller import PhysicalGantryController
+import yaml
 
 class StdoutRedirector:
     def __init__(self, text_widget):
@@ -32,7 +31,7 @@ class TextWidgetHandler(logging.Handler):
         self.text_widget.see(tk.END)
 
 class MotionGUI:
-    def __init__(self, root, crane_controller):
+    def __init__(self, root, crane_controller, cfg):
         self.root = root
         self.root.title("Motion Control GUI")
 
@@ -115,6 +114,12 @@ class MotionGUI:
 
         # add destruction of window functions
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # get limits from config
+        self.cart_position_limit = cfg.get("cart_position_limit")
+        self.hoist_position_limit = cfg.get("hoist_position_limit")
+        self.rope_angle_limit = cfg.get("rope_angle_limit")
+        self.wind_speed_limit = cfg.get("wind_speed_limit")
 
         self.update_status()
 
@@ -278,13 +283,13 @@ class MotionGUI:
         self.wind_label.config(text=f"Wind:\t(n/a, {wind_vel:.2f})")
 
         # Validity for angle
-        if abs(angle_pos) < 45.0:
+        if abs(angle_pos) < self.rope_angle_limit:
             self.angle_validity.config(text="Valid", foreground="green")
         else:
             self.angle_validity.config(text="Invalid", foreground="red")
 
         # Validity for wind
-        if abs(wind_vel) < 2.0:
+        if abs(wind_vel) < self.wind_speed_limit:
             self.wind_validity.config(text="Valid", foreground="green")
         else:
             self.wind_validity.config(text="Invalid", foreground="red")
@@ -294,8 +299,8 @@ class MotionGUI:
     def start_movement(self):
         logging.info("Start pressed")
         pos = float(self.pos_entry.get())
-        if pos < 0 or pos > 0.42:
-            logging.error("Error: Position out of range [0, 0.42]")
+        if pos < 0 or pos > self.cart_position_limit/1000:
+            logging.error(f"Error: Position out of range [0, {self.cart_position_limit/1000}]")
             self.pos_entry.delete(0, tk.END)
             return
         else:
@@ -333,8 +338,8 @@ class MotionGUI:
     def start_hoist_movement(self):
         logging.info("Start Hoist pressed")
         pos = float(self.hoist_pos_entry.get())
-        if pos < 0 or pos > 0.24:
-            logging.error("Error: Position out of range [0, 0.24]")
+        if pos < 0 or pos > self.hoist_position_limit/1000:
+            logging.error(f"Error: Position out of range [0, {self.hoist_position_limit/1000}]")
             self.hoist_pos_entry.delete(0, tk.END)
             return
         else:
@@ -346,5 +351,6 @@ class MotionGUI:
 if __name__ == "__main__":
     root = tk.Tk()
     with PhysicalGantryController("../examples/crane-properties.yaml") as crane_controller:
-        app = MotionGUI(root, crane_controller)
+        cfg = yaml.safe_load(open("../examples/crane-properties.yaml"))
+        app = MotionGUI(root, crane_controller, cfg)
         root.mainloop()

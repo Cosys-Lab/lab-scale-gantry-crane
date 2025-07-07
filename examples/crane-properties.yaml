@@ -16,6 +16,7 @@ cart_velocity_limit: 0.281      # m/s previous value 0.270 "overload:" 300
 rope_angle_limit: pi/2          # rad
 cart_position_limit: 445        # mm
 hoist_position_limit: 200       # mm
+wind_speed_limit: 2.0         # m/s 
 
 # machine IO microcontroller settings
 crane_IOUC_type: mock         # serial or mock
