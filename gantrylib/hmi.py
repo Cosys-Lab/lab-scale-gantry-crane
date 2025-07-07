@@ -299,14 +299,15 @@ class MotionGUI:
     def start_movement(self):
         logging.info("Start pressed")
         pos = float(self.pos_entry.get())
-        if pos < 0 or pos > self.cart_position_limit/1000:
-            logging.error(f"Error: Position out of range [0, {self.cart_position_limit/1000}]")
+        if pos < 0 or pos > self.cart_position_limit:
+            logging.error(f"Error: Position out of range [0, {self.cart_position_limit}]")
             self.pos_entry.delete(0, tk.END)
             return
         else:
             if self.move_type.get():
                 logging.info(f"Performing optimal move to {pos}")
-                self.crane_controller.moveOptimally(pos, 
+                # moveOptimally expects position in meters, so convert mm to m
+                self.crane_controller.moveOptimally(pos/1000, 
                                     write_to_db=self.write_to_db.get(), 
                                     validate=self.validate_results.get())
             else:
@@ -338,19 +339,11 @@ class MotionGUI:
     def start_hoist_movement(self):
         logging.info("Start Hoist pressed")
         pos = float(self.hoist_pos_entry.get())
-        if pos < 0 or pos > self.hoist_position_limit/1000:
-            logging.error(f"Error: Position out of range [0, {self.hoist_position_limit/1000}]")
+        if pos < 0 or pos > self.hoist_position_limit:
+            logging.error(f"Error: Position out of range [0, {self.hoist_position_limit}]")
             self.hoist_pos_entry.delete(0, tk.END)
             return
         else:
             vel = self.hoist_pos_move_velocity_slider.get()
             logging.info(f"Performing normal hoist move to {pos} with velocity {vel}")
             self.crane.moveHoistPosition(pos, vel)
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    with PhysicalGantryController("../examples/crane-properties.yaml") as crane_controller:
-        cfg = yaml.safe_load(open("../examples/crane-properties.yaml"))
-        app = MotionGUI(root, crane_controller, cfg)
-        root.mainloop()

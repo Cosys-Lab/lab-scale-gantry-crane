@@ -114,9 +114,9 @@ class GantryController():
         """
         # retrieve rope length and configure it in the trajectory generator
         if self.crane:
-            hoistpos = self.crane.hoistStepper.getPositionMm()
+            hoistpos = self.crane.hoistStepper.getPositionMm()/1000
             logging.info(f"Hoist position is {hoistpos} mm")
-            self.tg.r = (350-hoistpos)/1000
+            self.tg.r = self.crane.getRopeLength()/1000
             logging.info(f"Rope length is {self.tg.r} m")
         if genmethod == 'ocp':
             return self.tg.generateTrajectory(start, stop)
@@ -137,7 +137,7 @@ class GantryController():
             logging.info("Validation is not possible without writing to the database. Will not perform validation.")
 
         logging.info("Generating trajectory to " + str(target))
-        traj = self.generateTrajectory(self.crane.gantryStepper.getPositionMm()/1000, target, generator)
+        traj = self.generateTrajectory(self.crane.cartStepper.getPositionMm()/1000, target, generator)
         sleep(1.5) # sleep needed for initialization of the Arduino
         # TODO: check if the sleep is still needed? I don't think it is.
         logging.info("Trajectory generated")
@@ -149,11 +149,14 @@ class GantryController():
         t_start = datetime.now()
         measurement = self.executeTrajectory(traj)
         logging.info("Trajectory executed, updating position")
-        self.position = measurement[1][-1]
+        self.position = self.crane.cartStepper.getPositionMm()
         # align measurement to trajectory for storing
         measurement = self._align_measurement_to_trajectory(traj, measurement)
 
         # update traj en measurement to have timestamps in datetime format for db
+        # convert to lists, so we can modify them
+        traj = list(traj)
+        measurement = list(measurement)
         traj[0] = [t_start + timedelta(seconds=t) for t in traj[0]]
         measurement[0] = [t_start + timedelta(seconds=t) for t in measurement[0]]
         logging.info("Trajectory and measurement timestamps updated")
@@ -213,7 +216,7 @@ class GantryController():
         # measurement is a tuple of shape (t, x, v, a, theta, omega)   
         sleep(2)
         measurement = self.executeTrajectory(traj)
-        self.position = measurement[1][-1]
+        self.position = self.crane.cartStepper.getPositionMm()
         # align measurement to trajectory for storing
         measurement = self._align_measurement_to_trajectory(traj, measurement)
         return measurement
@@ -437,7 +440,7 @@ class PhysicalGantryController(GantryController):
         """        
         super().__init__(properties_file)
         self.crane = self.connectToCrane(properties_file)
-        self.position = self.crane.cartStepper.getPositionMm()/1000
+        self.position = self.crane.cartStepper.getPositionMm()
 
         # give crane to logger.
         self.continuous_logger.crane = self.crane

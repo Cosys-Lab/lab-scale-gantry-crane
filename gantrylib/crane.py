@@ -91,9 +91,6 @@ class MockCrane(Crane):
     def homeHoist(self):
         self.x_hoist = 0.0
 
-    def readAngle(self):
-        return (self.angle, self.omega, self.windspeed)
-
     def moveCartVelocity(self, velocity):
         self.v_cart = velocity
 
@@ -140,6 +137,8 @@ class PhysicalCrane(Crane):
         # set waypoints to empty
         self.waypoints = []
 
+        self.hoist_max_length = config["hoist_max_length"]  # Maximum length of the hoist cable in mm
+
     def __enter__(self):
         """Enter the runtime context for the crane.
 
@@ -158,8 +157,8 @@ class PhysicalCrane(Crane):
         """
         self.cartStepper.mc_interface.close()
         self.hoistStepper.mc_interface.close()
-        if self.angleUART is not None:
-            self.angleUART.close()
+        if self.crane_io_uc is not None:
+            self.crane_io_uc.close()
         self.gantryUART.close()
 
     def setWaypoints(self, waypoints):
@@ -187,7 +186,7 @@ class PhysicalCrane(Crane):
 
         # assume t = 0
         t = [0]
-        x = [self.cartStepper.getPosition()/self.cartStepper.mm_to_counts]
+        x = [self.cartStepper.getPositionMm()]
         v = [0]
         theta = [0]
         omega_arduino = [0]
@@ -195,15 +194,15 @@ class PhysicalCrane(Crane):
         a = [0]
         wp_dt = []
         # reset angle logger input buffer
-        if self.angleUART is not None:
-            self.angleUART.reset_input_buffer()
+        if self.crane_io_uc is not None:
+            self.crane_io_uc.reset_input_buffer()
 
         # set target position
         self.cartStepper.setAccelLimit(2147483647)
         self.cartStepper.setVelocityLimit(abs(self.waypoints[1].v*self.cartStepper.mm_s_to_rpm))
         t0 = time.time()
         now = 0
-        self.cartStepper.setPosition(self.waypoints[-1].x * self.cartStepper.mm_to_counts)
+        self.cartStepper.setPositionMm(self.waypoints[-1].x)
 
         for wp in self.waypoints[1:]:
             
@@ -223,7 +222,7 @@ class PhysicalCrane(Crane):
             #v.append(self.mc.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True))
             v.append(self.cartStepper.getVelocity())
             dt = time.time() - tick
-            new_theta, new_omega, new_wspeed = self.readAngle()
+            new_theta, new_omega, new_wspeed = self.crane_io_uc.getState()
             new_a = 0 # not measured for now.
             theta.append(new_theta)
             a.append(new_a)
@@ -343,17 +342,18 @@ class PhysicalCrane(Crane):
 
     def moveHoistPosition(self, position, velocity):
         # position in millimeters.
-        logging.info(f"Hoist target position: {position*1000*self.hoistStepper.mm_to_counts}")
+        logging.info(f"Hoist target position: {position} mm")
         self.hoistStepper.movePositionMm(position, velocity)
 
     def moveHoistRopeLength(self, rope_length, velocity):
         # rope_length in millimeters.
         # With hoist length, we should just flip it around, longest length is position 0)
+        rope_length = min(rope_length, self.hoistStepper.hoist_max_length)
         tgt_mot = abs(rope_length - self.hoistStepper.position_limit_mm)
         self.hoistStepper.movePositionMm(tgt_mot, velocity)
 
     def getRopeLength(self):
-        return self.hoistStepper.position_limit_mm - self.hoistStepper.getPositionMm()
+        return self.hoist_max_length - self.hoistStepper.getPositionMm()
 
     def getState(self):
         x_cart = self.cartStepper.getPositionMm()

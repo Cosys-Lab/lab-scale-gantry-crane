@@ -29,6 +29,7 @@ class Motor(metaclass=ABCMeta):
         # parameters
         self.pulley_circumference = pulley_circumference
         self.mm_to_counts = encoder_counts/self.pulley_circumference
+        logging.info(f"mm_to_counts: {self.mm_to_counts}")
         self.mm_s_to_rpm = 60/self.pulley_circumference
         self.I_max = int(1000*I_max) # convert amps to mA.
         # length of track in mm / pulley diameter in mm * encoder counts per revolution
@@ -160,12 +161,20 @@ class Motor(metaclass=ABCMeta):
         self.board.write_register(self.mc.REG.PID_VELOCITY_LIMIT, int(vel))
 
     def setPosition(self, pos):
-        """Set the current position.
+        """Set the target position.
 
         Args:
-            pos: current position.
+            pos: target position.
         """
         self.board.write_register(self.mc.REG.PID_POSITION_TARGET, int(pos))
+
+    def setPositionMm(self, pos):
+        """Set the target position in mm.
+
+        Args:
+            pos: target position in mm.
+        """
+        self.setPosition(int(pos * self.mm_to_counts))
 
     def setVelocity(self, vel):
         self.board.write_register(self.mc.REG.PID_VELOCITY_TARGET, int(vel))
@@ -178,6 +187,7 @@ class Motor(metaclass=ABCMeta):
 
     def movePosition(self, pos, vel = 2000):
         """Move the motor to a given position."""
+        logging.info(f"movePosition: {pos} counts, velocity: {vel} rpm")
         self.setPositionMode()
         self.resetLimits()
         self.setVelocityLimit(vel)
@@ -185,6 +195,7 @@ class Motor(metaclass=ABCMeta):
 
     def movePositionMm(self, pos, vel = 2000):
         """Move the motor to a given position in mm."""
+        logging.info(f"Super.movePositionMm: {pos} mm, velocity: {vel} mm/s")
         self.movePosition(pos * self.mm_to_counts, vel = vel)
 
     def _limitConfig(self):
@@ -387,6 +398,17 @@ class CartStepper(Stepper):
             float: The current position in cm.
         """
         return abs(super().getPositionMm() - self.position_limit_mm)
+    
+    def setPositionMm(self, pos):
+        """Set the target position in mm.
+
+        Args:
+            pos: target position in mm.
+        """
+        # pos in mm, so we need to convert it to counts.
+        logging.info(f"setPositionMm: {pos} mm")
+        tgt_mot = abs(pos - self.position_limit_mm)
+        super().setPositionMm(tgt_mot)
 
 class HoistStepper(Stepper):
     """Specializes stepper into the hoist stepper, that is the motor that does the hoisting movement."""
@@ -430,7 +452,7 @@ class HoistStepper(Stepper):
         super()._limitConfig()
         # default limits work from 0 to position_limit_counts, but hoist must go from -position_limit_counts to 0.
         self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 0)
-        self.board.write_register(self.mc.REG.POSITION_LIMIT_LOW, -self.position_limit_counts)
+        self.board.write_register(self.mc.REG.PID_POSITION_LIMIT_LOW, -self.position_limit_counts)
 
     def _PIConfig(self):
         """Configure the PI controller.
@@ -519,7 +541,8 @@ class HoistStepper(Stepper):
 
     def movePositionMm(self, pos, vel=2000):
         # pos in mm
-        super().movePositionMm(-pos, vel)
+        logging.info(f"movePositionMm: {pos} mm, velocity: {vel} mm/s")
+        super().movePositionMm(pos, vel)
 
     @override
     def getPositionMm(self):

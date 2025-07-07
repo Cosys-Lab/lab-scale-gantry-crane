@@ -30,6 +30,10 @@ class CraneIOUC(ABC):
         angle, _, _ = self.readAngle()
         self.angle_offset = angle + self.angle_offset
 
+    @abstractmethod
+    def reset_input_buffer(self):
+        pass
+
 class MockCraneIOUC(CraneIOUC):
     """
     Mock implementation of Crane I/O microcontroller interface for testing purposes.
@@ -40,6 +44,9 @@ class MockCraneIOUC(CraneIOUC):
 
     def getState(self):
         return (0.0, 0.0, 0.0)
+
+    def reset_input_buffer(self):
+        pass
 
 class SerialCraneIOUC(CraneIOUC):
     """
@@ -85,3 +92,6 @@ class SerialCraneIOUC(CraneIOUC):
             else:
                 return self.angle, self.omega, self.windspeed
 
+    def reset_input_buffer(self):
+        self.conn.reset_input_buffer()
+        self.buffer = bytearray(b'')

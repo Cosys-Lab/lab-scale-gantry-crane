@@ -9,5 +9,6 @@ if __name__ == "__main__":
     with open("./crane-properties.yaml", "r") as file:
         crane_properties = yaml.safe_load(file)
         with PhysicalGantryController(crane_properties) as crane_controller:
-            app = MotionGUI(root, crane_controller)
+            cfg = yaml.safe_load(open("../examples/crane-properties.yaml"))
+            app = MotionGUI(root, crane_controller, cfg)
             root.mainloop()
