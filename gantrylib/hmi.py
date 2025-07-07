@@ -113,7 +113,19 @@ class MotionGUI:
         self.current_pos = [0.0, 0.0]
         self.current_vel = [0.0, 0.0]
 
+        # add destruction of window functions
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
         self.update_status()
+
+    def on_close(self):
+        logging.info("Closing GUI")
+        # stop movement
+        self.stop_movement()
+        # cleanup continuous logging
+        self.crane_controller.cleanup()
+        # destroy window
+        self.root.destroy()
 
     def make_dpad(self, parent):
         self.dpad_buttons = {}

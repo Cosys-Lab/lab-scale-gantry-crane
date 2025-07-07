@@ -10,6 +10,7 @@ from gantrylib.gantry_database_io import DatabaseInterface
 
 
 class StateLoggerInterface(ABC):
+
     @abstractmethod
     def start_logging(self) -> None:
         pass
@@ -36,6 +37,7 @@ class StateLoggerInterface(ABC):
 
 class CraneStateLogger(StateLoggerInterface):
     def __init__(self, crane: Crane, db_writer: DatabaseInterface, logging_rate: float = 100.0, write_rate: float = 10.0, buffer_size: int = 1000, machine_id: int = 1) -> None:
+        super().__init__()
         self.crane = crane
         self.db_writer = db_writer
         self.logging_interval = 1.0 / logging_rate
@@ -174,6 +176,7 @@ class CraneStateLogger(StateLoggerInterface):
                 logging.error(f"Failed to cleanup continuous logging data: {e}")
 
 class NullStateLogger(StateLoggerInterface):
+
     def start_logging(self) -> None:
         pass
     

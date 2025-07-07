@@ -9,6 +9,7 @@ from gantrylib.crane import PhysicalCrane, Waypoint
 import numpy as np
 from scipy.signal import correlate
 from gantrylib.gantry_database_io_factory import DatabaseType
+from gantrylib.gantry_state_logger import CraneStateLogger, NullStateLogger
 
 class GantryController():
     """A class representing a controller for the gantry crane
@@ -26,12 +27,23 @@ class GantryController():
         self.name = config["machine_name"]
         # connection to database
         if config["connect_to_db"]:
+            # create a database connection
             logging.info("Connecting to database")
             self.dbconn = GantryDatabaseFactory.create_database(DatabaseType.POSTGRES, config)
             self.dbconn.connect()
+            # Give own dbconn to the logger.
+            if config["db_continuous_log"]:
+                logging.info("Starting continuous logging")
+                if isinstance(self, PhysicalGantryController):
+                    dbconn2 = GantryDatabaseFactory.create_database(DatabaseType.POSTGRES, config)
+                    dbconn2.connect()
+                    self.continuous_logger = CraneStateLogger(None, dbconn2, config["db_continuous_log_rate"], machine_id=self.id)
+                else:
+                    self.continuous_logger = NullStateLogger()
         else:
             logging.info("Not connecting to database")
             self.dbconn = GantryDatabaseFactory.create_database(DatabaseType.NONE, config)
+            self.continuous_logger = NullStateLogger()
 
         self.simulatortopic = config["simulator_topic"]
         self.validatortopic = config["validator_topic"]
@@ -70,6 +82,17 @@ class GantryController():
         except Exception:
             pass
     
+    def cleanup(self):
+        """Cleanup the continuous logging data
+
+        This method is called when the controller is exited.
+        It will stop the continuous logger and flush the buffer.
+        """
+        try:
+            self.continuous_logger.cleanup()
+        except Exception as e:
+            logging.error(f"Failed to cleanup continuous logging data: {e}")
+
     @abstractmethod
     def connectToCrane(self):
         """Method to connect to the gantry crane.
@@ -119,6 +142,8 @@ class GantryController():
         # TODO: check if the sleep is still needed? I don't think it is.
         logging.info("Trajectory generated")
 
+        # before executing the trajectory, pause the continuous logger
+        self.continuous_logger.pause()
         
         logging.info("Executing trajectory")
         t_start = datetime.now()
@@ -156,6 +181,10 @@ class GantryController():
             logging.info("Validator notified")
         
         logging.info("Trajectory executed")
+
+        # resume continuous logger
+        self.continuous_logger.resume()
+
         return traj, measurement   
 
     @abstractmethod
@@ -313,6 +342,11 @@ class MockGantryController(GantryController):
             properties_file (string): path to a properties file
         """        
         super().__init__(properties_file)
+
+        #TODO: at some point, we might want a mock crane that can be used for testing?
+        self.crane = None  # No real crane, so set to None
+        self.continuous_logger.crane = None  # No real crane, so set to None
+        self.continuous_logger.start_logging()  # Start the logger, but it won't log anything
         
         self.position = 0
 
@@ -404,6 +438,11 @@ class PhysicalGantryController(GantryController):
         super().__init__(properties_file)
         self.crane = self.connectToCrane(properties_file)
         self.position = self.crane.cartStepper.getPositionMm()/1000
+
+        # give crane to logger.
+        self.continuous_logger.crane = self.crane
+        # start continuous logger (if Null logger, this does nothing)
+        self.continuous_logger.start_logging()
 
     def __enter__(self):
         """Enter the runtime context of the gantry controller.
