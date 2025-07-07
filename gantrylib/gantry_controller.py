@@ -21,7 +21,7 @@ class GantryController():
         Args:
             config (dict): Configuration dictionary holding details of the gantry crane.
         """
-
+        logging.info("Initializing GantryController")
         # machine identification in database
         self.id = config["machine_id"]
         self.name = config["machine_name"]
@@ -40,6 +40,9 @@ class GantryController():
                     self.continuous_logger = CraneStateLogger(None, dbconn2, config["db_continuous_log_rate"], machine_id=self.id)
                 else:
                     self.continuous_logger = NullStateLogger()
+            else:
+                logging.info("Continuous logging is disabled, using NullStateLogger")
+                self.continuous_logger = NullStateLogger()
         else:
             logging.info("Not connecting to database")
             self.dbconn = GantryDatabaseFactory.create_database(DatabaseType.NONE, config)
@@ -89,6 +92,7 @@ class GantryController():
         It will stop the continuous logger and flush the buffer.
         """
         try:
+            self.continuous_logger.stop_logging()
             self.continuous_logger.cleanup()
         except Exception as e:
             logging.error(f"Failed to cleanup continuous logging data: {e}")
@@ -162,11 +166,13 @@ class GantryController():
         logging.info("Trajectory and measurement timestamps updated")
 
         if write_to_db:
-            self._updateRunNumber()
+            self.run =self.dbconn.get_next_run_id(self.id)
             logging.info("Run number updated to " + str(self.run))
             # fetch run number from database
             logging.info("Storing in database")
-            self.storeTrajectory(traj)
+            # create a new run in the database
+            self.dbconn.store_run(self.run, self.id, t_start)
+            self.dbconn.store_trajectory(self.id, self.run, traj)
 
         if validate and write_to_db:
             logging.info("Trajectory stored, notifying simulator")
@@ -175,7 +181,7 @@ class GantryController():
         
         if write_to_db:
             logging.info("Storing measurement in database")
-            self.storeMeasurement(measurement)
+            self.dbconn.store_measurement(self.id, self.run, measurement)
             logging.info("Measurement stored in database")
 
         if validate and write_to_db:
@@ -184,6 +190,10 @@ class GantryController():
             logging.info("Validator notified")
         
         logging.info("Trajectory executed")
+
+        if write_to_db:
+            # after everything has been stored without errors, commit
+            self.dbconn.commit()
 
         # resume continuous logger
         self.continuous_logger.resume()

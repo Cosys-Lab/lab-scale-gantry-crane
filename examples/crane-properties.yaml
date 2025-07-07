@@ -40,12 +40,12 @@ cart_calibrated: True
 hoist_calibrated: True
 
 # database settings
-connect_to_db: False
+connect_to_db: True
 db_address: "127.0.0.1"
 db_name: gantrycrane
 db_user: postgres
 db_password: postgres
-db_continuous_log: True
+db_continuous_log: False
 db_continuous_log_rate: 10 # Hz. Maximum is around 150 Hz
 
 # MQTT broker settings

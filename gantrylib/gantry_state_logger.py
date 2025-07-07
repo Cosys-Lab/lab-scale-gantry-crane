@@ -11,6 +11,9 @@ from gantrylib.gantry_database_io import DatabaseInterface
 
 class StateLoggerInterface(ABC):
 
+    def __init__(self):
+        self.crane = None
+
     @abstractmethod
     def start_logging(self) -> None:
         pass

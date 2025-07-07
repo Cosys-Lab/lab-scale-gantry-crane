@@ -209,22 +209,29 @@ class NullDatabase(DatabaseInterface):
         pass
 
     def get_next_run_id(self, machine_id: int) -> int:
+        logging.warning("NullDatabase: get_next_run_id called, returning 0")
         return 0
 
     def store_run(self, run_id: int, machine_id: int, start_time):
+        logging.warning("NullDatabase: store_run called, but no action taken")
         pass
 
     def store_trajectory(self, machine_id: int, run_id: int, trajectory: tuple):
+        logging.warning("NullDatabase: store_trajectory called, but no action taken")
         pass
 
     def store_measurement(self, machine_id: int, run_id: int, measurement: tuple):
+        logging.warning("NullDatabase: store_measurement called, but no action taken")
         pass
 
     def commit(self):
+        logging.warning("NullDatabase: commit called, but no action taken")
         pass
 
     def cleanup_continuous_logging(self, start_time: datetime, machine_id: int) -> None:
+        logging.warning("NullDatabase: cleanup_continuous_logging called, but no action taken")
         pass
 
     def store_state(self, machine_id: int, run_id: int, state: tuple):
+        logging.warning("NullDatabase: store_state called, but no action taken")
         pass

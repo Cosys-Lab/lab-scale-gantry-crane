@@ -218,7 +218,7 @@ class PhysicalCrane(Crane):
             t.append(time.time() - t0)
             tick = time.time()
             #x.append(self.mc.read_register(self.mc.REG.PID_POSITION_ACTUAL, signed=True))
-            x.append(self.cartStepper.getPosition()) 
+            x.append(self.cartStepper.getPositionMm()) 
             #v.append(self.mc.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True))
             v.append(self.cartStepper.getVelocity())
             dt = time.time() - tick
@@ -248,9 +248,9 @@ class PhysicalCrane(Crane):
         # we don't have omega, calculate it with numpy gradient
         # apply filtering first because taking derivative gets noisy quick
         omega = np.gradient(savgol_filter(np.array(theta), 15, 6), np.array(t))
-        # x is still in counts and should be in meters
-        x = [xs/self.cartStepper.mm_to_counts/1000 for xs in x]
-        # v is also in the wrong unit, should m/s^2
+        # x is in mm and should be in meters
+        x = [xs/1000 for xs in x]
+        # v is also in the wrong unit, should m/s^2 and not rpm
         v = [vs/self.cartStepper.mm_s_to_rpm/1000 for vs in v]
 
         logging.info("wp dt:" + str(wp_dt))
