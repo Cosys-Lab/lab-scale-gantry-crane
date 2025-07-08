@@ -10,7 +10,7 @@ The repository is structured as follows:
 - [C4-diagrams](C4-diagrams/): C4 diagrams of the crane's software used in the EDTConf submitted exemplar paper.
 - [CAD](CAD/): CAD models of the crane in Fusion360, as well as 3MF exports for 3D printing.
 - [arcadia](arcadia/): Capella models of the crane used in the SpaceRaise doctoral school.
-- [arduino](arduino/): KiCad project of an optinal Arduino shield that simplifies connecting the sensors of the crane, and accompanying code.
+- [arduino](arduino/): KiCad project of an optional Arduino shield that simplifies connecting the sensors of the crane, and accompanying code.
 - [docker](docker/): A Docker compose file and associated files allowing for easy setup of the necessary background services.
 - [docs](docs/): docs for creating the GitHub pages with MkDocs
 - [examples](examples/): Examples of the Python module that controls the crane.
@@ -82,7 +82,7 @@ You can now run the example.
 
 Upon first starting, it will home the cart and hoist motor. Homing the cart motor happens automatically, homing the hoist motor must be done with some manual user input. The script prompts you to confirm this on the command line. Afterwards you will see the simple HMI interface that allows you to move the crane.
 
-![HMI Screenshot](docs/assets/hmi.png)
+![HMI Screenshot](docs/assets/HMI.png)
 
 ## Publications
 
