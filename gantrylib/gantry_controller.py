@@ -11,6 +11,8 @@ from scipy.signal import correlate
 from gantrylib.gantry_database_io_factory import DatabaseType
 from gantrylib.gantry_state_logger import CraneStateLogger, NullStateLogger
 
+from gantrylib.gantry_simulator import GantrySimulator
+
 class GantryController():
     """A class representing a controller for the gantry crane
     """
@@ -64,6 +66,11 @@ class GantryController():
         # Note to self: might break mockGantryController
         self.crane = None
         self.position = 0
+
+        # should be made a bit more robust with a NullSimulator if no database connection is used.
+        # but for now, we just assume that the database is present.
+        self.simulator = GantrySimulator(config)
+        self.simrepls = config["replications"]
 
     def __enter__(self):
         """Enter the runtime context of the gantry controller.
@@ -130,7 +137,7 @@ class GantryController():
         else:
             return self.tg.generateTrajectoryLQR(start, stop)
 
-    def moveOptimally(self, target, generator = 'ocp', write_to_db = False, validate = False):
+    def moveOptimally(self, target, generator = 'ocp', write_to_db = False, simulate = False, validate = False):
         """Make a movement and log it to a database
 
         Args:
@@ -143,6 +150,12 @@ class GantryController():
         if validate and not write_to_db:
             logging.info("Validation is not possible without writing to the database. Will not perform validation.")
 
+        if validate and not simulate:
+            logging.info("Simulation is not enabled, will not perform validation.")
+
+        if simulate and not write_to_db:
+            logging.info("Simulation requires writing to the database, otherwise all results just get lost.")
+        
         logging.info("Generating trajectory to " + str(target))
         traj = self.generateTrajectory(self.crane.cartStepper.getPositionMm()/1000, target, generator)
         sleep(1.5) # sleep needed for initialization of the Arduino
@@ -171,6 +184,7 @@ class GantryController():
         measurement[0] = [t_start + timedelta(seconds=t) for t in measurement[0]]
         logging.info("Trajectory and measurement timestamps updated")
 
+        # writeout current run to database.
         if write_to_db:
             self.run =self.dbconn.get_next_run_id(self.id)
             logging.info("Run number updated to " + str(self.run))
@@ -179,25 +193,27 @@ class GantryController():
             # create a new run in the database
             self.dbconn.store_run(self.run, self.id, t_start)
             self.dbconn.store_trajectory(self.id, self.run, traj)
-
-        if validate and write_to_db:
-            logging.info("Trajectory stored, notifying simulator")
-            self.notifySimulator()
-            logging.info("Simulator notified")
-        
-        if write_to_db:
+            # store measurements
             logging.info("Storing measurement in database")
             self.dbconn.store_measurement(self.id, self.run, measurement)
             logging.info("Measurement stored in database")
 
-        if validate and write_to_db:
-            logging.info("notifying validator")
-            self.notifyValidator()
-            logging.info("Validator notified")
-        
-        logging.info("Trajectory executed")
+            # commit already, since simulator and validator will use the data.
+            self.dbconn.commit()
 
-        if write_to_db:
+            # perform simulations.
+            if simulate:
+                logging.info("Simulating trajectory")
+                # simulate the trajectory
+                self.simulator.run_simulations(self.run, self.simrepls, self.tg.r)
+                logging.info("Trajectories simulated and stored")
+
+            # if 
+            if validate:
+                logging.info("Trajectory stored, notifying simulator")
+                pass
+                logging.info("Simulator notified")
+        
             # after everything has been stored without errors, commit
             self.dbconn.commit()
 

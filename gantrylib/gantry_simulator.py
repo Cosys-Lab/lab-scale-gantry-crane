@@ -1,16 +1,11 @@
-from typing import Any
 from gantrylib.gantry_simulation import GantrySimulation
-import yaml
-from multiprocessing.connection import Client, Listener
 import concurrent.futures as cf
 import psycopg
-from psycopg_pool import ConnectionPool
 from datetime import timedelta, datetime
 import numpy as np
 import os
 import logging
 import sys
-import paho.mqtt.client as mqtt
 # from psycopgpool import pool
 
 # due to using multiprocessing there is a lot of stuff that needs to be
@@ -53,7 +48,9 @@ def simulate(sim, traj_id, machine_id, repl_id, t_now, dbaddr, x0, theta0, omega
             u = [row[1] for row in rows]
             ts = [(row[0] - rows[0][0]).total_seconds() for row in rows]
             # fetch intial values for x, v, theta and omega
-            cur.execute("select quantity, value \
+            logging.info(simid + " fetching IC")
+            try:
+                cur.execute("select quantity, value \
                         from trajectory \
                         where machine_id = " + str(machine_id) + \
                         "AND run_id = " + str(traj_id) + \
@@ -63,6 +60,9 @@ def simulate(sim, traj_id, machine_id, repl_id, t_now, dbaddr, x0, theta0, omega
                         where machine_id = " + str(machine_id) + \
                         "AND run_id = " + str(traj_id) + \
                         "and quantity  in ('position', 'velocity', 'angular position', 'angular velocity'));")
+            except Exception as e:
+                logging.error(simid + " Error fetching initial conditions: " + str(e))
+            logging.info(simid + "Executed query for IC")
             rows = cur.fetchall()
             
             # shape will be sth like:
@@ -73,6 +73,7 @@ def simulate(sim, traj_id, machine_id, repl_id, t_now, dbaddr, x0, theta0, omega
             # this needs to be ordered into y_init (x0, v0, theta0, omega0)
             # easiest is to cast to dict I guess
             initvals = dict(rows)
+            logging.info(simid + " IC: " + str(initvals))
             y_init = [initvals["position"] + x0,\
                         initvals["velocity"],\
                         initvals["angular position"] + theta0,\
@@ -80,6 +81,7 @@ def simulate(sim, traj_id, machine_id, repl_id, t_now, dbaddr, x0, theta0, omega
             logging.info(simid + " fetched initial conditions: " + str(y_init))
             # I guess we now have everything to setup the simulation
             sol = sim.simulate(y_init, ts, ts, u)
+            logging.info(simid + " Simulation results: " + str(sol))
             logging.info(simid + " Simulated: " + str(sol))
             # simulation results can now be written to the database
             t_db = [t_now + timedelta(seconds=ts) for ts in sol.t]
@@ -102,13 +104,13 @@ def signal_done(fut):
     # check if id still exists in the ppe_futures.values
     if traj_id not in set(ppe_futures.values()):
         # if not, all those processes have returned and we can signal validator that simulations are done.
-        ret = mqttclient.publish(validatortopic, payload=str({"traj_id": traj_id, "src": "Simulator"}), qos = 2, retain=False)
-        ret.wait_for_publish()
+        # ret = mqttclient.publish(validatortopic, payload=str({"traj_id": traj_id, "src": "Simulator"}), qos = 2, retain=False)
+        # ret.wait_for_publish()
         logging.info("all simulations of trajectory " + str(traj_id) + " are done")
 
 class GantrySimulator():
 
-    def __init__(self, properties_file) -> None:
+    def __init__(self, config: dict) -> None:
         """
         Parameters
         ----------
@@ -116,39 +118,23 @@ class GantrySimulator():
             path to the properties file of the gantrycrane
         """
         # load properties file
-        with open(properties_file, 'r') as f:
-            props = yaml.safe_load(f)
-            # machine identification in database
-            self.id = props["machine id"]
-            self.name = props["machine name"]
-            # connection to database
-            self.simulatortopic = props["simulator topic"]
-            self.validatortopic = props["validator topic"]
-            global validatortopic
-            validatortopic = self.validatortopic
-            self.r_mean = props["r mean"]
-            self.r_SD = props["r SD"]
-            self.x0_SD = props["x0 SD"]
-            self.theta0_SD = props["theta0 SD"]
-            self.omega0_SD = props["omega0 SD"]
-            self.mp = props["pendulum mass"]
-            # random generator for sampling of parameters
-            self.rng = np.random.default_rng()
-            # executor for parallel jobs
-            self.executor = cf.ProcessPoolExecutor(max_workers=max(os.cpu_count()-4, 4))
-            
-            # mqtt setup
-            self.mqttc = mqtt.Client("Simulator")
-            global mqttclient
-            mqttclient = self.mqttc
-            self.mqttc.on_connect = self.on_connect
-            self.mqttc.message_callback_add(self.simulatortopic, self.on_simulatorTopicMessage)
-
-            # db setup
-            self.dbaddr = "host="+props["database address"]\
-                        + " dbname=" + props["database name"]\
-                        + " user=" + props["database user"]
-            self.dbconn = psycopg.connect(self.dbaddr)
+        self.id = config["machine_id"]
+        self.name = config["machine_name"]
+        self.rope_length_SD = config["rope_length_SD"]
+        self.position_SD = config["position_SD"]
+        self.theta_SD = config["theta_SD"]
+        self.omega_SD = config["omega_SD"]
+        self.mp = config["pendulum_mass"]
+        # random generator for sampling of parameters
+        self.rng = np.random.default_rng()
+        # executor for parallel jobs
+        self.executor = cf.ProcessPoolExecutor(max_workers=max(os.cpu_count()-4, 4))
+        
+        # db setup
+        self.dbaddr = "host="+config["db_address"]\
+                    + " dbname=" + config["db_name"]\
+                    + " user=" + config["db_user"] + " password=" + config["db_password"]
+        self.dbconn = psycopg.connect(self.dbaddr)
 
         logging.info("Created simulator " + str(self))
 
@@ -165,59 +151,33 @@ class GantrySimulator():
         except Exception:
             pass
 
-    def on_connect(self, client, userdata, flags, rc):
-        logging.info("Connected with result code" + str(rc))
-
-        # subscribe to topics
-        self.mqttc.subscribe(self.simulatortopic, qos = 2)
-
-    def on_simulatorTopicMessage(self, client, userdata, msg):
-        logging.info("Received message: " + str(msg.payload))
-
-        # what was in start can now go in this callback
-        req = eval(msg.payload)
+    def run_simulations(self, run_id, repls, rope_length):
+        """
+        run simulations
+        run_id is the ID of the simulation run
+        repls is the number of replications to run
+        rope_length (legacy, this is not logged, it really should have been...)
+        """
         # create new simulation in database
-        # use a connection from the pool for this
-        logging.info("Creating new simulation in database")
         with self.dbconn.cursor() as cur:
             cur.execute("""INSERT INTO simulation (run_id, 
                         machine_id, num_replications)
-                        VALUES (%s, %s, %s)""", (req["traj_id"], \
-                        self.id, req["repls"]))
+                        VALUES (%s, %s, %s)""", (run_id, self.id, repls))
         self.dbconn.commit()
         logging.info("Setting up replications")
-        repls = [i for i in range(req["repls"])]
+        repls_ids = [i for i in range(repls)]
         # sample values of r, x0, theta0 and omega0 for the simulation objects
-        rs = self.rng.normal(self.r_mean, self.r_SD, req["repls"])
-        # these should be added as deviation from the initial condition
-        x0s = self.rng.normal(0, self.x0_SD, req["repls"])
-        theta0s = self.rng.logistic(0, self.theta0_SD, req["repls"])
-        omega0s = self.rng.logistic(0, self.omega0_SD, req["repls"])
-        # instantiate simulations
+        rs = self.rng.normal(rope_length, self.rope_length_SD, repls) # 
+        x0s = self.rng.normal(0, self.position_SD, repls)
+        theta0s = self.rng.logistic(0, self.theta_SD, repls)
+        omega0s = self.rng.logistic(0, self.omega_SD, repls)
         sims = [GantrySimulation(r=r, mp=self.mp) for r in rs]
-        # Use minimal datetime for 0 of the simulations
         t_now = datetime.min
-        # create futures
         logging.info("Submitting jobs to processing pool")
-        futs = [self.executor.submit(simulate, sim, req["traj_id"], self.id, repl_id, t_now, self.dbaddr, x0, theta0, omega0) for (sim, repl_id, x0, theta0, omega0) in zip(sims, repls, x0s, theta0s, omega0s)]
+        futs = [self.executor.submit(simulate, sim, run_id, self.id, repl_id, t_now, self.dbaddr, x0, theta0, omega0) for (sim, repl_id, x0, theta0, omega0) in zip(sims, repls_ids, x0s, theta0s, omega0s)]
         logging.info(str([str(fut.__hash__()) for fut in futs]))
         global ppe_futures
         for fut in futs:
             fut.add_done_callback(signal_done)
-            ppe_futures[fut.__hash__()] = req["traj_id"]
-        logging.info("Done, waiting for new request")
-
-    def start(self):
-        logging.info("Simulator" + str(self) +  "started, will continuously listen for messages")
-        self.mqttc.connect("localhost")
-        self.mqttc.loop_forever()
-
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    with GantrySimulator("./crane-properties.yaml") as gs:
-        try:
-            gs.start()
-        except KeyboardInterrupt:
-            pass
-
-
+            ppe_futures[fut.__hash__()] = run_id
+        logging.info("Simulations Done")

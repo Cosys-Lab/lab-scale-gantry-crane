@@ -56,11 +56,10 @@ simulator_topic: gantrycrane/simulator
 
 # simulator settings for continuous validation
 replications: 30
-r_mean: 0.45
-r_SD: 0.00025
-x0_SD: 0.00025
-theta0_SD: 0.000198
-omega0_SD: 0.000159
+rope_length_SD: 0.00025
+position_SD: 0.00025
+theta_SD: 0.000198
+omega_SD: 0.000159
 
 # validator settings
 # the metrics can be set to True/False to enable/disable their calculation.

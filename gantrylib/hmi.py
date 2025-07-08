@@ -86,9 +86,12 @@ class MotionGUI:
         writeout_frame.grid(row=1, column=0, sticky="nsew", padx=0, pady=5)
 
         self.write_to_db = tk.BooleanVar()
+        self.simulate_results = tk.BooleanVar()
         self.validate_results = tk.BooleanVar()
+        
 
         ttk.Checkbutton(writeout_frame, text="Write to database", variable=self.write_to_db).pack(anchor="w", padx=10, pady=2)
+        ttk.Checkbutton(writeout_frame, text="Simulate results", variable=self.simulate_results).pack(anchor="w", padx=10, pady=2)
         ttk.Checkbutton(writeout_frame, text="Validate results", variable=self.validate_results).pack(anchor="w", padx=10, pady=2)
 
         # Movement control row
@@ -308,7 +311,8 @@ class MotionGUI:
                 logging.info(f"Performing optimal move to {pos}")
                 # moveOptimally expects position in meters, so convert mm to m
                 self.crane_controller.moveOptimally(pos/1000, 
-                                    write_to_db=self.write_to_db.get(), 
+                                    write_to_db=self.write_to_db.get(),
+                                    simulate=self.simulate_results.get(), 
                                     validate=self.validate_results.get())
             else:
                 vel = self.pos_move_velocity_slider.get()
