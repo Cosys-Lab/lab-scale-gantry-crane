@@ -1,4 +1,4 @@
-# lab-scale-gantry-crane
+# Lab-scale Gantry Crane Digital Twin Exemplar
 
 This repository describes a lab-scale gantry crane digital twin exemplar. This exemplar was used in a couple of our [publications](#publications). This readme only contains basic information, for the complete documentation, head to [github pages](https://Cosys-Lab.github.io/lab-scale-gantry-crane/).
 
