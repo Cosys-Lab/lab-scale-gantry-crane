@@ -3,9 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 import sys
 
-from gantrylib.gantry_controller import PhysicalGantryController
-import yaml
-
 class StdoutRedirector:
     def __init__(self, text_widget):
         self.text_widget = text_widget
@@ -126,10 +123,13 @@ class MotionGUI:
     def on_close(self):
         logging.info("Closing GUI")
         # stop movement
+        logging.info("Stopping all movements")
         self.stop_movement()
         # cleanup continuous logging
+        logging.info("Cleaning up continuous logging")
         self.crane_controller.cleanup()
         # destroy window
+        logging.info("Destroying GUI window")
         self.root.destroy()
 
     def make_dpad(self, parent):

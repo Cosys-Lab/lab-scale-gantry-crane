@@ -1,3 +1,5 @@
+from threading import Thread
+import threading
 import time
 import numpy as np
 from gantrylib.motors import CartStepper, HoistStepper
@@ -138,6 +140,9 @@ class PhysicalCrane(Crane):
         self.waypoints = []
 
         self.hoist_max_length = config["hoist_max_length"]  # Maximum length of the hoist cable in mm
+
+        self.get_state_lock = threading.Lock()
+
 
     def __enter__(self):
         """Enter the runtime context for the crane.
@@ -356,12 +361,15 @@ class PhysicalCrane(Crane):
         return self.hoist_max_length - self.hoistStepper.getPositionMm()
 
     def getState(self):
-        x_cart = self.cartStepper.getPositionMm()
-        v_cart = self.cartStepper.getVelocityMms()
-        x_hoist = self.hoistStepper.getPositionMm()
-        v_hoist = self.hoistStepper.getVelocityMms()
-        (theta, omega, wspeed) = self.crane_io_uc.getState()
-        return (x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed)
+        # is it getState that is not thread safe?
+        # yes, seemed like it was. Logging should be fixed now?
+        with self.get_state_lock:
+            x_cart = self.cartStepper.getPositionMm()
+            v_cart = self.cartStepper.getVelocityMms()
+            x_hoist = self.hoistStepper.getPositionMm()
+            v_hoist = self.hoistStepper.getVelocityMms()
+            (theta, omega, wspeed) = self.crane_io_uc.getState()
+            return (x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed)
 
 
 class Waypoint():

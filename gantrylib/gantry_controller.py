@@ -36,6 +36,7 @@ class GantryController():
                 logging.info("Starting continuous logging")
                 if isinstance(self, PhysicalGantryController):
                     dbconn2 = GantryDatabaseFactory.create_database(DatabaseType.POSTGRES, config)
+                    dbconn2.auto_commit = True
                     dbconn2.connect()
                     self.continuous_logger = CraneStateLogger(None, dbconn2, config["db_continuous_log_rate"], machine_id=self.id)
                 else:
@@ -91,8 +92,10 @@ class GantryController():
         This method is called when the controller is exited.
         It will stop the continuous logger and flush the buffer.
         """
-        try:
+        try:   
+            logging.info("Stopping continuous logging")
             self.continuous_logger.stop_logging()
+            logging.info("Removing continuous logs from database")
             self.continuous_logger.cleanup()
         except Exception as e:
             logging.error(f"Failed to cleanup continuous logging data: {e}")
@@ -148,7 +151,10 @@ class GantryController():
 
         # before executing the trajectory, pause the continuous logger
         self.continuous_logger.pause()
-        
+        # stopping the threads might be slightly more performant?
+        # self.continuous_logger.stop_logging()
+        # self.continuous_logger.flush_buffer()
+
         logging.info("Executing trajectory")
         t_start = datetime.now()
         measurement = self.executeTrajectory(traj)
@@ -197,6 +203,7 @@ class GantryController():
 
         # resume continuous logger
         self.continuous_logger.resume()
+        # self.continuous_logger.start_logging()
 
         return traj, measurement   
 
