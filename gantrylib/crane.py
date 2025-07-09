@@ -1,54 +1,148 @@
-# class for the tmc4671 based crane
-# based on stepper_config.py
-
+from threading import Thread
+import threading
 import time
 import numpy as np
-from gantrylib.motors import GantryStepper, HoistStepper
-import re
-import serial
+from gantrylib.motors import CartStepper, HoistStepper
 
 from scipy.signal import savgol_filter
 
 import logging
+from abc import ABC, abstractmethod
 
-class Crane:
+from gantrylib.crane_io_uc_factory import CraneIOUCFactory
+
+class Crane(ABC):
+    """
+    Abstract base class representing the crane interface.
+    """
+
+    @abstractmethod
+    def homeCart(self):
+        pass
+
+    @abstractmethod
+    def homeHoist(self):
+        pass
+
+    @abstractmethod
+    def homeAllAxes(self):
+        pass
+
+    @abstractmethod
+    def setWaypoints(self, waypoints):
+        pass
+
+    @abstractmethod
+    def executeWaypointsPosition(self):
+        pass
+
+    @abstractmethod
+    def moveCartVelocity(self, velocity):
+        pass
+
+    @abstractmethod
+    def moveHoistVelocity(self, velocity):
+        pass
+
+    @abstractmethod
+    def moveCartPosition(self, position, velocity):
+        pass
+
+    @abstractmethod
+    def moveHoistPosition(self, position, velocity):
+        pass
+
+    @abstractmethod
+    def getState(self):
+        pass
+
+class MockCrane(Crane):
+    """
+    Mock implementation of the Crane interface for testing.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.waypoints = []
+        self.angle = 0.0
+        self.omega = 0.0
+        self.windspeed = 0.0
+        self.x_cart = 0.0
+        self.v_cart = 0.0
+        self.x_hoist = 0.0
+        self.v_hoist = 0.0
+
+    def setWaypoints(self, waypoints):
+        self.waypoints = waypoints
+
+    def executeWaypointsPosition(self):
+        t = [0.0]
+        x = [self.x_cart]
+        v = [self.v_cart]
+        a = [0.0]
+        theta = [self.angle]
+        omega = [self.omega]
+        return (t, x, v, a, theta, omega)
+
+    def homeAllAxes(self):
+        self.x_cart = 0.0
+        self.x_hoist = 0.0
+
+    def homeCart(self):
+        self.x_cart = 0.0
+
+    def homeHoist(self):
+        self.x_hoist = 0.0
+
+    def moveCartVelocity(self, velocity):
+        self.v_cart = velocity
+
+    def moveHoistVelocity(self, velocity):
+        self.v_hoist = velocity
+
+    def moveCartPosition(self, position, velocity):
+        self.x_cart = position
+        self.v_cart = velocity
+
+    def moveHoistPosition(self, position, velocity):
+        self.x_hoist = position
+        self.v_hoist = velocity
+
+    def getState(self):
+        return (self.x_cart, self.v_cart, self.x_hoist, self.v_hoist, self.angle, self.omega, self.windspeed)
+
+class PhysicalCrane(Crane):
     """
     A class representing the gantrycrane.
     """
 
-    def __init__(self, gantryPort, hoistPort, angleUARTPort, gantryUARTPort, calibrated = False, I_max = 1) -> None:
+    def __init__(self, config: dict) -> None:
         """Initializes a Crane instance.
-
-        Args:
-            gantryPort (string): Serial port of the motor controller controlling the lateral movement motor.
-            hoistPort (string): Serial port of the motor controller controlling the hoisting motor.
-            angleUARTPort (string): Serial port of the Arduino that measures the swing angle
-            gantryUARTPort (string): unused
-            calibrated (bool, optional): Whether the crane's motors are already calibrated or not. Defaults to False.
-            I_max (int, optional): Maximal motor current. Defaults to 1A
         """
-        
+
         # create motors
-        self.gantryStepper = GantryStepper(port=gantryPort, calibrated=calibrated, I_max= I_max)
-        self.hoistStepper = HoistStepper(port=hoistPort, calibrated=calibrated)
+        I_max = config["cart_acceleration_limit"] * 0.167 + 0.833 # where does this come from?
+        self.cartStepper = CartStepper(port=config["cart_motor_port"], 
+                                           calibrated=config["cart_calibrated"], 
+                                           I_max=I_max, 
+                                           encoder_counts=config["cart_encoder_counts"],
+                                           position_limit=config["cart_position_limit"],
+                                           pulley_circumference=config["cart_pulley_circumference"])
+        self.hoistStepper = HoistStepper(port=config["hoist_motor_port"], 
+                                         calibrated=config["hoist_calibrated"], 
+                                         encoder_counts=config["hoist_encoder_counts"],
+                                         position_limit=config["hoist_position_limit"],
+                                         pulley_circumference=config["hoist_pulley_circumference"],)
+
+        # create crane I/O uc interface.
+        self.crane_io_uc = CraneIOUCFactory.create_crane_io_uc(config)
+
         # set waypoints to empty
         self.waypoints = []
 
-        # create serial connections for logging, or None if no logging is needed.
-        if angleUARTPort is not None:
-            self.angleUART = serial.Serial(angleUARTPort, 115200)
-        else:
-            self.angleUART = None
+        self.hoist_max_length = config["hoist_max_length"]  # Maximum length of the hoist cable in mm
 
-        # angle pattern regex
-        self.pattern = re.compile(r"(-?\d*\.\d*) (-?\d*\.\d*)\r\n")
+        self.get_state_lock = threading.Lock()
 
-        # last angle
-        self.lastAngle = 0
-        self.lastAccel = 0
-        self.lastOmega = 0
-
-        self.buffer = ""
 
     def __enter__(self):
         """Enter the runtime context for the crane.
@@ -66,10 +160,10 @@ class Crane:
             exc_value (BaseException or None): The exception instance if one was raised, else None.
             traceback (TracebackType or None): The traceback object if an exception was raised, else None.
         """
-        self.gantryStepper.mc_interface.close()
+        self.cartStepper.mc_interface.close()
         self.hoistStepper.mc_interface.close()
-        if self.angleUART is not None:
-            self.angleUART.close()
+        if self.crane_io_uc is not None:
+            self.crane_io_uc.close()
         self.gantryUART.close()
 
     def setWaypoints(self, waypoints):
@@ -88,7 +182,7 @@ class Crane:
         Returns:
             tuple(list[float], list[float], list[float], list[float], list[float], list[float]): tuple(t, x, v, a, theta, omega), 
         """
-        self.gantryStepper.setPositionMode()
+        self.cartStepper.setPositionMode()
 
         # logging:
         # we can log the following: t, x, v, theta
@@ -97,22 +191,23 @@ class Crane:
 
         # assume t = 0
         t = [0]
-        x = [self.gantryStepper.getPosition()/self.gantryStepper.mm_to_counts]
+        x = [self.cartStepper.getPositionMm()]
         v = [0]
         theta = [0]
         omega_arduino = [0]
+        wspeed = [0]
         a = [0]
         wp_dt = []
         # reset angle logger input buffer
-        if self.angleUART is not None:
-            self.angleUART.reset_input_buffer()
+        if self.crane_io_uc is not None:
+            self.crane_io_uc.reset_input_buffer()
 
         # set target position
-        self.gantryStepper.setAccelLimit(2147483647)
-        self.gantryStepper.setVelocityLimit(abs(self.waypoints[1].v*self.gantryStepper.mm_s_to_rpm))
+        self.cartStepper.setAccelLimit(2147483647)
+        self.cartStepper.setVelocityLimit(abs(self.waypoints[1].v*self.cartStepper.mm_s_to_rpm))
         t0 = time.time()
         now = 0
-        self.gantryStepper.setPosition(self.waypoints[-1].x * self.gantryStepper.mm_to_counts)
+        self.cartStepper.setPositionMm(self.waypoints[-1].x)
 
         for wp in self.waypoints[1:]:
             
@@ -121,31 +216,32 @@ class Crane:
             while(now < wp.t):
                 now = time.time() - t0
 
-            self.gantryStepper.setVelocityLimit(abs(wp.v)*self.gantryStepper.mm_s_to_rpm)
+            self.cartStepper.setVelocityLimit(abs(wp.v)*self.cartStepper.mm_s_to_rpm)
             
             # logging
             
             t.append(time.time() - t0)
             tick = time.time()
             #x.append(self.mc.read_register(self.mc.REG.PID_POSITION_ACTUAL, signed=True))
-            x.append(self.gantryStepper.getPosition()) 
+            x.append(self.cartStepper.getPositionMm()) 
             #v.append(self.mc.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True))
-            v.append(self.gantryStepper.getVelocity())
+            v.append(self.cartStepper.getVelocity())
             dt = time.time() - tick
-            new_theta, new_omega = self.readAngle()
+            new_theta, new_omega, new_wspeed = self.crane_io_uc.getState()
             new_a = 0 # not measured for now.
             theta.append(new_theta)
             a.append(new_a)
             omega_arduino.append(new_omega)
+            wspeed.append(new_wspeed)
             
             #print("logging time:" +str(dt)) 
             wp_end = time.time()
             wp_dt.append(wp_end-wp_start)
 
 
-        self.gantryStepper.setTorqueMode()
+        self.cartStepper.setTorqueMode()
         # self.hoistStepper.setTorqueMode()
-        self.gantryStepper.setTorque(0)
+        self.cartStepper.setTorque(0)
         # self.hoistStepper.setTorque(0)
 
         # For logging:
@@ -157,10 +253,10 @@ class Crane:
         # we don't have omega, calculate it with numpy gradient
         # apply filtering first because taking derivative gets noisy quick
         omega = np.gradient(savgol_filter(np.array(theta), 15, 6), np.array(t))
-        # x is still in counts and should be in meters
-        x = [xs/self.gantryStepper.mm_to_counts/1000 for xs in x]
-        # v is also in the wrong unit, should m/s^2
-        v = [vs/self.gantryStepper.mm_s_to_rpm/1000 for vs in v]
+        # x is in mm and should be in meters
+        x = [xs/1000 for xs in x]
+        # v is in the wrong unit, should m/s^2 and not rpm, also wrong sign
+        v = [-vs/self.cartStepper.mm_s_to_rpm/1000 for vs in v]
 
         logging.info("wp dt:" + str(wp_dt))
         logging.info("dt: " + str(np.array(t[1:-1]) - np.array(t[0:-2])))
@@ -194,7 +290,7 @@ class Crane:
 
         Added for internal testing purposes, don't use.
         """
-        self.gantryStepper._testMove()
+        self.cartStepper._testMove()
         # self.hoistStepper._testMove()
 
     def homeAllAxes(self):
@@ -202,60 +298,78 @@ class Crane:
 
         Hoiststepper isn't homed, since we don't have a proper automated homing procedure for it.
         """
-        self.gantryStepper.setPositionMode()
+        self.cartStepper.setPositionMode()
         # self.hoistStepper.setPositionMode()
-        self.gantryStepper.setPosition(0)
+        self.cartStepper.setPosition(0)
         # self.hoistStepper.setPosition(0)
-        self.gantryStepper.setLimits(acc=2147483647, vel=420)
+        self.cartStepper.setLimits(acc=2147483647, vel=420)
         # self.hoistStepper.setLimits(acc=2147483647, vel=420)
 
         start = time.time()
-        while(round(self.gantryStepper.getPosition(), -2) != 0 and round(self.gantryStepper.getPosition(), -2) !=0 and time.time() - start < 20):
+        while(round(self.cartStepper.getPosition(), -2) != 0 and round(self.cartStepper.getPosition(), -2) !=0 and time.time() - start < 20):
             pass
 
-    def homeGantry(self):
+    def homeCart(self):
         """Homes the cart on the gantry
         """
-        self.gantryStepper.setPositionMode()
-        self.gantryStepper.setPosition(0)
-        self.gantryStepper.setLimits(acc=2147483647, vel=420)
+        if self.cartStepper.calibrated:
+            logging.info("Homing gantry")
+            self.cartStepper.setPositionMode()
+            self.cartStepper.setPosition(0)
+            self.cartStepper.setLimits(acc=2147483647, vel=420)
 
-        start = time.time()
-        while(round(self.gantryStepper.getPosition(), -2) != 0 and time.time() - start < 20):
-            pass
-    
-    def readAngle(self):
-        """Reads the latest received angle from the angleUART
-
-        Returns:
-            tuple(float, float): Tuple(theta, omega)
-        """
-        if self.angleUART is not None:
-            # Add incoming data to the buffer
-            self.buffer += self.angleUART.read(self.angleUART.in_waiting).decode('utf-8')
-
-            # Find all matches in the buffer
-            matches = self.pattern.findall(self.buffer)
-
-            # Check if a match is found
-            if matches:
-                last_match = matches[-1]
-
-                theta = -1* float(last_match[0])
-                omega = -1* float(last_match[1])
-
-                # Remove the parsed data from the buffer, keep only the last (unparsed) part
-                self.buffer = self.buffer.split(last_match[2])[-1]
- 
-                self.lastAngle = theta # * 1/0.76023946 scale factor that might be needed
-                self.lastOmega = omega
-                return theta, omega
-            else:
-                # No match found, return None
-                logging.info("no match, returning previous values")
-                return self.lastAngle, self.lastOmega
+            start = time.time()
+            while(round(self.cartStepper.getPosition(), -2) != 0 and time.time() - start < 20):
+                pass
+            logging.info("Cart homed")
         else:
-            return (0, 0)
+            self.cartStepper._homeAndCalibrate()
+    
+    def homeHoist(self):
+        logging.info("Homing hoist")
+        # can't really home the hoist in closed loop mode, so do so with calbrate function.
+        self.hoistStepper._homeAndCalibrate()
+        logging.info("Hoist homed")   
+        
+    def moveCartVelocity(self, velocity):
+        # velocity in rpm
+        self.cartStepper.moveVelocity(velocity)
+
+    def moveHoistVelocity(self, velocity):
+        # velocity in rpm
+        self.hoistStepper.moveVelocity(velocity)
+
+    def moveCartPosition(self, position, velocity):
+        # position in millimeters.
+        # flip cart axis around (motors treat rightnmost position as 0, we treat leftmost position as 0)
+        tgt_mot = abs(position - self.cartStepper.position_limit_mm)
+        self.cartStepper.movePositionMm(tgt_mot, velocity)
+
+    def moveHoistPosition(self, position, velocity):
+        # position in millimeters.
+        logging.info(f"Hoist target position: {position} mm")
+        self.hoistStepper.movePositionMm(position, velocity)
+
+    def moveHoistRopeLength(self, rope_length, velocity):
+        # rope_length in millimeters.
+        # With hoist length, we should just flip it around, longest length is position 0)
+        rope_length = min(rope_length, self.hoistStepper.hoist_max_length)
+        tgt_mot = abs(rope_length - self.hoistStepper.position_limit_mm)
+        self.hoistStepper.movePositionMm(tgt_mot, velocity)
+
+    def getRopeLength(self):
+        return self.hoist_max_length - self.hoistStepper.getPositionMm()
+
+    def getState(self):
+        # is it getState that is not thread safe?
+        # yes, seemed like it was. Logging should be fixed now?
+        with self.get_state_lock:
+            x_cart = self.cartStepper.getPositionMm()
+            v_cart = self.cartStepper.getVelocityMms()
+            x_hoist = self.hoistStepper.getPositionMm()
+            v_hoist = self.hoistStepper.getVelocityMms()
+            (theta, omega, wspeed) = self.crane_io_uc.getState()
+            return (x_cart, v_cart, x_hoist, v_hoist, theta, omega, wspeed)
 
 
 class Waypoint():

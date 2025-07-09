@@ -1,5 +1,7 @@
+import logging
 import time
 from abc import ABCMeta, abstractmethod
+from typing import override
 from pytrinamic.evalboards import TMC4671_eval
 from pytrinamic.ic import TMC4671
 from pytrinamic.connections import ConnectionManager
@@ -9,13 +11,8 @@ class Motor(metaclass=ABCMeta):
     """A class representing a motor.
     """
 
-    def __init__(self, port, pulley_circumference, I_max) -> None:
+    def __init__(self, port, pulley_circumference, I_max, encoder_counts, position_limit) -> None:
         """Initializes a Motor instance.
-
-        Args:
-            port: serial port of the motor controller
-            pulley_circumference: circumference of the motor pulley
-            I_max: maximum current
         """
         self.mc_interface = ConnectionManager(arg_list="--port="+port).connect()
 
@@ -30,10 +27,15 @@ class Motor(metaclass=ABCMeta):
             self.board = self.mc
 
         # parameters
-        self.pulley_diameter = pulley_circumference
-        self.mm_to_counts = 65536/self.pulley_diameter
-        self.mm_s_to_rpm = 60/self.pulley_diameter
+        self.pulley_circumference = pulley_circumference
+        self.mm_to_counts = encoder_counts/self.pulley_circumference
+        logging.info(f"mm_to_counts: {self.mm_to_counts}")
+        self.mm_s_to_rpm = 60/self.pulley_circumference
         self.I_max = int(1000*I_max) # convert amps to mA.
+        # length of track in mm / pulley diameter in mm * encoder counts per revolution
+        self.encoder_counts = encoder_counts
+        self.position_limit_mm = position_limit
+        self.position_limit_counts = int(position_limit / self.pulley_circumference * self.encoder_counts)
 
         # increase baudrate of UART logging interface
         # 921600 is the maximum the FTDI adapter does in windows
@@ -108,6 +110,14 @@ class Motor(metaclass=ABCMeta):
         """
         return self.board.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True)
 
+    def getVelocityMms(self):
+        """Get the current velocity in cm/s.
+
+        Returns:
+            float: The current velocity in cm/s.
+        """
+        return self.getVelocity()/self.mm_to_counts/self.mm_s_to_rpm
+
     def getPosition(self):
         """Get the current position.
 
@@ -115,6 +125,14 @@ class Motor(metaclass=ABCMeta):
             int: The current position
         """
         return self.board.read_register(self.mc.REG.PID_POSITION_ACTUAL, signed=True)
+    
+    def getPositionMm(self):
+        """Get the current position in cm.
+
+        Returns:
+            float: The current position in cm.
+        """
+        return (self.getPosition())/self.mm_to_counts
 
     def setLimits(self, acc, vel):
         """Set acceleration and velocity limits.
@@ -143,27 +161,63 @@ class Motor(metaclass=ABCMeta):
         self.board.write_register(self.mc.REG.PID_VELOCITY_LIMIT, int(vel))
 
     def setPosition(self, pos):
-        """Set the current position.
+        """Set the target position.
 
         Args:
-            pos: current position.
+            pos: target position.
         """
         self.board.write_register(self.mc.REG.PID_POSITION_TARGET, int(pos))
 
-    def setVelocity(self, vel):
-        """Set the current velocity
+    def setPositionMm(self, pos):
+        """Set the target position in mm.
 
         Args:
-            vel: The current velocity.
+            pos: target position in mm.
         """
+        self.setPosition(int(pos * self.mm_to_counts))
+
+    def setVelocity(self, vel):
         self.board.write_register(self.mc.REG.PID_VELOCITY_TARGET, int(vel))
+
+    def moveVelocity(self, vel):
+        """Move the motor with a given velocity."""
+        self.setVelocityMode()
+        self.resetLimits()
+        self.setVelocity(vel)
+
+    def movePosition(self, pos, vel = 2000):
+        """Move the motor to a given position."""
+        logging.info(f"movePosition: {pos} counts, velocity: {vel} rpm")
+        self.setPositionMode()
+        self.resetLimits()
+        self.setVelocityLimit(vel)
+        self.setPosition(pos)
+
+    def movePositionMm(self, pos, vel = 2000):
+        """Move the motor to a given position in mm."""
+        logging.info(f"Super.movePositionMm: {pos} mm, velocity: {vel} mm/s")
+        self.movePosition(pos * self.mm_to_counts, vel = vel)
+
+    def _limitConfig(self):
+        # current limits (also limits acceleration)
+        self.board.write_register(self.mc.REG.PID_TORQUE_FLUX_LIMITS, self.I_max)
+        # velocity limits
+        self.board.write_register(self.mc.REG.PID_VELOCITY_LIMIT, 6000)
+        # position limits
+        # lower limit is simply 0
+        self.board.write_register(self.mc.REG.PID_POSITION_LIMIT_LOW, 0)
+        self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, self.position_limit_counts)
+
+    def resetLimits(self):
+        self.setAccelLimit(2147483647)
+        self.setVelocityLimit(2000)
 
 class Stepper(Motor, metaclass=ABCMeta):
     """Specialization of the Motor class into a Stepper motor."""
 
-    def __init__(self, port, pulley_diameter, I_max) -> None:
+    def __init__(self, port, pulley_circumference, I_max, encoder_counts, position_limit) -> None:
         """Initialize a Stepper instance."""
-        super().__init__(port, pulley_diameter, I_max)
+        super().__init__(port, pulley_circumference, I_max, encoder_counts, position_limit)
 
     def _motorConfig(self):
         """Configure the motor as stepper motor.
@@ -197,14 +251,6 @@ class Stepper(Motor, metaclass=ABCMeta):
         self.board.write_register(self.mc.REG.ABN_DECODER_PPR, 0x00009C40)
         self.board.write_register(self.mc.REG.ABN_DECODER_PHI_E_PHI_M_OFFSET, 0x00000000)
 
-    @abstractmethod
-    def _limitConfig(self):
-        """Configure the limits.
-        """
-        super()._limitConfig()
-        self.board.write_register(self.mc.REG.PID_TORQUE_FLUX_LIMITS, self.I_max)
-        self.board.write_register(self.mc.REG.PID_VELOCITY_LIMIT, 6000)
-
     def _feedbackSelection(self):
         """Select feedback."""
         super()._feedbackSelection()
@@ -213,18 +259,15 @@ class Stepper(Motor, metaclass=ABCMeta):
         self.board.write_register(self.mc.REG.VELOCITY_SELECTION, self.mc.ENUM.VELOCITY_PHI_M_ABN)
         self.board.write_register(self.mc.REG.POSITION_SELECTION, self.mc.ENUM.VELOCITY_PHI_M_ABN)
 
-class GantryStepper(Stepper):
-    """Specializes stepper into the gantry stepper, that is the motor that does the lateral movement."""
+class CartStepper(Stepper):
+    """Specializes stepper into the cart stepper, that is the motor that does the lateral movement."""
 
-    def __init__(self, port, calibrated=False, I_max = 1) -> None:
-        """Initializes an instance of GantryStepper.
-
-        Args:
-            port: The serial port of the motor controller.
-            calibrated (bool, optional): Whether the motor is calibrated or not. Defaults to False.
-            I_max: The maximum currnet. Defaults to 1 Ampere.
-        """
-        super().__init__(port, pulley_diameter=40, I_max=I_max)
+    def __init__(self, port, calibrated=False, I_max = 1, encoder_counts = 65536, pulley_circumference = 0.04, position_limit=700) -> None:
+        super().__init__(port, 
+                         pulley_circumference=pulley_circumference, 
+                         I_max=I_max, 
+                         encoder_counts=encoder_counts,
+                         position_limit=position_limit)
         self._motorConfig()
         self._ADCConfig()
         self._encoderConfig()
@@ -232,25 +275,14 @@ class GantryStepper(Stepper):
         self._PIConfig()
         self._feedbackSelection()
 
+        self.calibrated = calibrated
         if not calibrated:
             self._homeAndCalibrate()
-        else:
-            self.setPositionMode()
-            print("current position:", self.getPosition())
-            print("setting position to 0")
-            while(round(self.getPosition(),-2) !=0):
-                self.setPosition(0)
-                time.sleep(4)
-            print("current position:", self.getPosition())
-            if round(self.getPosition(), -2) != 0:
-                # if position mode homing somehow didn't work we can try velocity homing
-                self.setVelocityMode()
-                self.setVelocity(-20)
-                time.sleep(0.1)
-                start = time.now()
-                while(round(abs(self.getVelocity())) > 2 and time.now()-start < 4):
-                    pass
-                print("position homing failed, velocity homing yielded position", self.getPosition())
+
+    def _encoderConfig(self):
+        super()._encoderConfig()
+        # ABN encoder settings. The hoist needs to invert the encoder direction from the default
+        # self.board.write_register_field(self.mc.FIELD.ABN_DIRECTION, 0)
 
     def _ADCConfig(self):
         """Configure the ADC.
@@ -258,15 +290,6 @@ class GantryStepper(Stepper):
         super()._ADCConfig()
         self.board.write_register(self.mc.REG.ADC_I0_SCALE_OFFSET, 0x01008224)
         self.board.write_register(self.mc.REG.ADC_I1_SCALE_OFFSET, 0x01008177)
-    
-    def _limitConfig(self):
-        """Configure the movement limits.
-        """
-        super()._limitConfig()
-        # Limits
-        self.board.write_register(self.mc.REG.PID_POSITION_LIMIT_LOW, 0)
-        # 650mm /40mm per revolution * 65536 pulses per revolution
-        self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 1064960)
 
     def _PIConfig(self):
         """Configure the PI controller.
@@ -288,12 +311,13 @@ class GantryStepper(Stepper):
         # the last part of the idea didn't end up working and is now removed from the code.
 
         # Open loop settings
+        logging.info("Homing in open loop mode, please wait.")
 
         self.board.write_register(self.mc.REG.OPENLOOP_MODE, 0x00000000)
         self.board.write_register(self.mc.REG.OPENLOOP_ACCELERATION, 0x0000003C)
 
         self.board.write_register(self.mc.REG.PHI_E_SELECTION, self.mc.ENUM.PHI_E_OPEN_LOOP)
-        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000BB8)
+        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000FA0)
 
         self.board.write_register(self.mc.REG.MODE_RAMP_MODE_MOTION, 0x00000008)
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, -20)
@@ -301,22 +325,21 @@ class GantryStepper(Stepper):
 
         start = time.time()
         now = start
-        # print(now)
-        # thought this might be needed if initial velocity causes code to think endpoint is reached.
-        time.sleep(0.1)
+        time.sleep(0.5) # give motors time to ramp up.
         while((now - start) < 20 ):
             vel = self.board.read_register(self.mc.REG.PID_VELOCITY_ACTUAL, signed=True)
             # print(vel)
             if abs(vel) < 2:
+                logging.info("Velocity dropped to zero, endpoint reached.")
                 # velocity is zero or less, meaning endpoint is reached.
                 break
 
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, 0)
         self.board.write_register(self.mc.REG.UQ_UD_EXT, 0)
 
-        # zero position reached, move away from it a tiny bit such that we can do encoder calibration.
+        # rightmost position reached, move away from it a tiny bit such that we can do encoder calibration.
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, 20)
-        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000BB8)
+        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000FA0)
         time.sleep(0.8)
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, 0)
         self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000000)
@@ -332,8 +355,8 @@ class GantryStepper(Stepper):
         self.board.write_register(self.mc.REG.PHI_E_EXT, 0x00000000)
         self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00001388)
         time.sleep(4)
-        self.board.write_register(self.mc.REG.ABN_DECODER_COUNT, 0x00000000)
-        # reset position as well
+        self.board.write_register(self.mc.REG.ABN_DECODER_COUNT, 0)
+        # Set position to zero position.
         self.board.write_register(self.mc.REG.PID_POSITION_ACTUAL, 0)
 
         # Feedback selection
@@ -349,6 +372,7 @@ class GantryStepper(Stepper):
         # Note on the swith to torque mode: after the calibration I switch the controller to
         # torque mode and wait a bit for the target to settle.
         # I found that if I don't do this, the motor does a jerky movement when enabling velocity/position mode
+        self.calibrated = True
 
     def _testMove(self):
         """Perform a test movement.
@@ -367,24 +391,44 @@ class GantryStepper(Stepper):
         # Stop
         self.board.write_register(self.mc.REG.PID_TORQUE_FLUX_TARGET, 0x00000000)
 
+    def getPositionMm(self):
+        """Get the current position in cm.
+
+        Returns:
+            float: The current position in cm.
+        """
+        return abs(super().getPositionMm() - self.position_limit_mm)
+    
+    def setPositionMm(self, pos):
+        """Set the target position in mm.
+
+        Args:
+            pos: target position in mm.
+        """
+        # pos in mm, so we need to convert it to counts.
+        logging.info(f"setPositionMm: {pos} mm")
+        tgt_mot = abs(pos - self.position_limit_mm)
+        super().setPositionMm(tgt_mot)
+
 class HoistStepper(Stepper):
     """Specializes stepper into the hoist stepper, that is the motor that does the hoisting movement."""
 
-    def __init__(self, port, calibrated=False, I_max = 1) -> None:
+    def __init__(self, port, calibrated=False, I_max = 1, encoder_counts = 65536, pulley_circumference = 21*pi, position_limit=700) -> None:
         """Initializes an instance of GantryStepper.
 
         Args:
             port: The serial port of the motor controller.
             calibrated (bool, optional): Whether the motor is calibrated or not. Defaults to False.
-            I_max: The maximum currnet. Defaults to 1 Ampere.
+            I_max: The maximum current. Defaults to 1 Ampere.
         """
-        super().__init__(port, pulley_diameter=21*pi, I_max = I_max)
+        super().__init__(port, pulley_circumference=pulley_circumference, I_max=I_max, encoder_counts=encoder_counts, position_limit=position_limit)
         self._motorConfig()
         self._ADCConfig()
         self._encoderConfig()
         self._limitConfig()
         self._PIConfig()
         self._feedbackSelection()
+        self.setVelocityLimit(50) # set velocity limit to 50 mm/s
 
         if not calibrated:
             self._homeAndCalibrate()
@@ -402,16 +446,13 @@ class HoistStepper(Stepper):
         """
         super()._ADCConfig()
         self.board.write_register(self.mc.REG.ADC_I0_SCALE_OFFSET, 0x0100819D)
-        self.board.write_register(self.mc.REG.ADC_I1_SCALE_OFFSET, 0x0100821A)   
+        self.board.write_register(self.mc.REG.ADC_I1_SCALE_OFFSET, 0x0100821A)
 
     def _limitConfig(self):
-        """Configure the limits.
-        """
         super()._limitConfig()
-        self.board.write_register(self.mc.REG.PID_POSITION_LIMIT_LOW, 0)
-        # self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 458752) # 7 rotations
-        self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 458752) # 4 rotations
-        self.board.write_register(self.mc.REG.PID_VELOCITY_LIMIT, 50)
+        # default limits work from 0 to position_limit_counts, but hoist must go from -position_limit_counts to 0.
+        self.board.write_register(self.mc.REG.POSITION_LIMIT_HIGH, 0)
+        self.board.write_register(self.mc.REG.PID_POSITION_LIMIT_LOW, -self.position_limit_counts)
 
     def _PIConfig(self):
         """Configure the PI controller.
@@ -436,7 +477,7 @@ class HoistStepper(Stepper):
         self.board.write_register(self.mc.REG.OPENLOOP_ACCELERATION, 0x0000003C)
 
         self.board.write_register(self.mc.REG.PHI_E_SELECTION, self.mc.ENUM.PHI_E_OPEN_LOOP)
-        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000BB8)
+        self.board.write_register(self.mc.REG.UQ_UD_EXT, 0x00000FA0)
 
         self.board.write_register(self.mc.REG.MODE_RAMP_MODE_MOTION, 0x00000008)
         self.board.write_register(self.mc.REG.OPENLOOP_VELOCITY_TARGET, -20)
@@ -474,12 +515,8 @@ class HoistStepper(Stepper):
         # user intervention is needed here.
 
         input("Hoist ready for zeroing, please manually put the hoist to the zero position and confirm with enter")
-        self.board.write_register(self.mc.REG.PID_POSITION_ACTUAL, 458740)
+        self.board.write_register(self.mc.REG.PID_POSITION_ACTUAL, 0)
         self.board.write_register(self.mc.REG.MODE_RAMP_MODE_MOTION, self.mc.ENUM.MOTION_MODE_POSITION)
-        # assuming user has properly set actual position
-        # top of container is at 150 cm, but center of mass is at 140
-        # self.board.write_register(self.mc.REG.PID_POSITION_ACTUAL, int(130/21.22*65536))
-
 
     def _testMove(self):
         """Perform a test movement
@@ -497,3 +534,18 @@ class HoistStepper(Stepper):
 
         # Stop
         self.board.write_register(self.mc.REG.PID_TORQUE_FLUX_TARGET, 0x00000000)
+
+    def movePosition(self, pos, vel = 2000):
+        """Move the motor to a given position."""
+        super().movePosition(-pos, vel = vel)
+
+    def movePositionMm(self, pos, vel=2000):
+        # pos in mm
+        logging.info(f"movePositionMm: {pos} mm, velocity: {vel} mm/s")
+        super().movePositionMm(pos, vel)
+
+    @override
+    def getPositionMm(self):
+        # Get the current position in mm. Hoist is inverted, so we need to flip the sign.
+        return -1 * super().getPositionMm()
+    

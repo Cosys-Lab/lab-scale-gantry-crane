@@ -7,6 +7,7 @@
 #define FORWARD_PIN 5
 #define BACKWARD_PIN 7
 #define ELECTROMAGNET_PIN 9
+#define ANEMOMETER_PIN A0
 
 #define DEBOUNCE_THRESHOLD 10 // Number of consecutive stable samples required
 
@@ -35,6 +36,10 @@ long prev_time = 0;
 float angle = 0;
 float angular_vel = 0;
 float angular_vel_smooth = 0;
+float wspeed = 0;
+
+// anemometer things
+int anemometer_zero = 0;
 
 // Function prototypes
 void setup();
@@ -52,7 +57,8 @@ void debouncePulse();
 void pulseCheck();
 void setElectroMagnet(int onOff);
 void updateAngle();
-void printAngle();
+void printHuman();
+void printMachine();
 
 void setup() {
   Serial.begin(115200);
@@ -61,8 +67,10 @@ void setup() {
   pinMode(PULSE_SENSOR_PIN, INPUT);
   pinMode(FORWARD_PIN, OUTPUT);
   pinMode(BACKWARD_PIN, OUTPUT);
-  pinMode(ELECTROMAGNET_PIN, OUTPUT);
+  pinMode(ELECTROMAGNET_PIN, OUTPUT); // important!
   setElectroMagnet(0);
+  pinMode(ANEMOMETER_PIN, INPUT);
+  anemometer_zero = analogRead(ANEMOMETER_PIN); // zero reading (make sure no wind is there at bootup!)
 
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(START_SENSOR_PIN), startSensorISR, FALLING);
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(END_SENSOR_PIN), stopSensorISR, FALLING);
@@ -92,9 +100,11 @@ void loop() {
   // update as fast as possible
   updateAngle();
   // output at 100 Hz?
-  if(millis() > prev_millis_angle+100){
-    printAngle();
+  if(millis() > prev_millis_angle+10){
     prev_millis_angle = millis();
+    wspeed = (analogRead(ANEMOMETER_PIN) - anemometer_zero) * (32.4 - 0) / (410 - anemometer_zero) + 0;
+    printHuman();
+    printMachine();
   }
   
   pulseCheck();
@@ -283,11 +293,22 @@ void updateAngle(){
     }
 }
 
-void printAngle(){
+void printHuman(){
     Serial.print("A: ");
     Serial.print(angle); 
     Serial.print(",V: ");
-    Serial.println(angular_vel_smooth);
+    Serial.print(angular_vel_smooth);
+    Serial.print(",W: ");
+    Serial.println(wspeed);
+}
+
+// transmits serialized floats, as to not lose precision on other end.
+void printMachine(){
+  Serial.write(0x01); // start byte (start of heading)
+  // everything else I'm sending are characters, so this should be fine to use.
+  Serial.write((byte*) &angle, sizeof(float));
+  Serial.write((byte*) &angular_vel_smooth, sizeof(float));
+  Serial.write((byte*) &wspeed, sizeof(float));
 }
 
 // /*
