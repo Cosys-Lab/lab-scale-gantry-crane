@@ -36,8 +36,8 @@ hoist_pulley_circumference: 66  # [mm] circumference of the pulley on the hoist 
 
 
 # machine calibration state
-cart_calibrated: True
-hoist_calibrated: True
+cart_calibrated: False
+hoist_calibrated: False
 
 # database settings
 connect_to_db: True

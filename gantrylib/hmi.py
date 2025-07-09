@@ -82,7 +82,7 @@ class MotionGUI:
         self.make_sliders(slider_frame)
 
         # Writeout Frame below the sliders, in right_frame
-        writeout_frame = ttk.LabelFrame(right_frame, text="Writeout")
+        writeout_frame = ttk.LabelFrame(right_frame, text="Writeout for Optimal Move")
         writeout_frame.grid(row=1, column=0, sticky="nsew", padx=0, pady=5)
 
         self.write_to_db = tk.BooleanVar()

@@ -70,7 +70,7 @@ The MQTT broker is really only needed if you want to run the TrajectoryGenerator
 
 ## Software quickstart
 
-Assuming you went through the [software setup](#software-setup) and built the crane according to the [hardware quickstart](#hardware-quickstart), the fastest way to get the crane to do something is using the [run_with_hmi.py](examples/run_with_hmi.py) example.
+Assuming you went through the [software setup](#software-setup) and built the crane according to the [hardware quickstart](#hardware-quickstart), the fastest way to get the crane to do something is using the [run_with_hmi.py](examples/run_with_hmi.py) example. A short video demonstrating the example can be found on [youtube](https://youtu.be/BBAWoA0mC9U).
 
 You will have to configure [crane-properties.yaml](examples/crane-properties.yaml) for your specific installation, more specifically, specify the serial ports of the two motor controller boards. Unfortunately, the Trinamic devkits don't offer a unique ID that allows you to identify them, therefore we recommend plugging in the boards one by one, and noting down the serial ports that appear as you plug them in (in `device manager/Ports (COM & LPT)` in Windows, or under `/dev/tty*` in Linux.)
 
