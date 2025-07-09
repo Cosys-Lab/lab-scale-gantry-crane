@@ -1,12 +1,8 @@
-from msilib.schema import Error
-from os import path
-from matplotlib.pyplot import axis
 import numpy as np
 from scipy.spatial import distance
 import warnings
 from skimage import measure
 
-from sympy import im
 
 def rootMeanSquaredError(P, D):
     """

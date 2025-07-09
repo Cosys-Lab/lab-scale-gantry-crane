@@ -12,6 +12,7 @@ setup(
         "pytrinamic",
         "psycopg[binary]",
         "typing-extensions",
-        "paho-mqtt"
+        "paho-mqtt",
+        "scikit-image"
     ], 
 )

@@ -45,7 +45,7 @@ db_address: "127.0.0.1"
 db_name: gantrycrane
 db_user: postgres
 db_password: postgres
-db_continuous_log: True
+db_continuous_log: False
 db_continuous_log_rate: 10 # Hz. Maximum is around 150 Hz
 
 # MQTT broker settings
@@ -68,6 +68,7 @@ mahalanobis_distance: True
 frequentist_metric: True
 global_frequentist_metric: True
 reliability_metric: True
+root_mean_squared_error: True
 
 # address to use for inter-script comms
 address: localhost

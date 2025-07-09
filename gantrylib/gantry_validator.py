@@ -20,7 +20,7 @@ def numToSQL(x):
     else:
         return str(x)
 
-def validate(traj_id, machine_id, metrics, quantities, dbaddr):
+def validate(run_id, machine_id, metrics, quantities, dbaddr):
     # this function is going to be a bit cumbersome, since I haven't
     # been particularly consistent in how the metrics are called.
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -41,7 +41,7 @@ def validate(traj_id, machine_id, metrics, quantities, dbaddr):
             # retrieve trajectory log for the needed quantities
             query = "select ts, value, quantity from measurement "\
                         + "where machine_id = " + str(machine_id)  \
-                        + " and run_id = " + str(traj_id) \
+                        + " and run_id = " + str(run_id) \
                         + " and quantity in (" + str(quantities)[1:-1] + ")" \
                         + " order by quantity, ts;"
             cur.execute(query)
@@ -61,7 +61,7 @@ def validate(traj_id, machine_id, metrics, quantities, dbaddr):
             # same for the simulated replications
             query = "select ts, value, quantity, replication_nr  from simulationdatapoint "\
             + "where machine_id = " + str(machine_id) \
-            + " and run_id = " + str(traj_id)  \
+            + " and run_id = " + str(run_id)  \
             + " and quantity in (" + str(quantities)[1:-1] + ")" \
             + " order by quantity, replication_nr, ts;"
             cur.execute(query)
@@ -117,7 +117,7 @@ def validate(traj_id, machine_id, metrics, quantities, dbaddr):
                                   FROM stdin""") as copy:
                         for (t, data) in zip(t_db, [d]):
                             # write all quantities
-                            copy.write_row((machine_id, traj_id, qty, t, data))
+                            copy.write_row((machine_id, run_id, qty, t, data))
             if "normalized euclidean distance" in metrics:
                 # expects P: 1xN array of predicition
                 #         D: 1xN array of data
@@ -144,9 +144,9 @@ def validate(traj_id, machine_id, metrics, quantities, dbaddr):
                                   FROM stdin""") as copy:
                         for (t, data) in zip(t_db, d):
                             # write all quantities
-                            copy.write_row((machine_id, traj_id, qty, t, data))
+                            copy.write_row((machine_id, run_id, qty, t, data))
                     query = "insert into totalnormalizedeuclideandistance (machine_id, run_id, quantity, distance) values"\
-                                + "("+str(machine_id) +"," + str(traj_id)+ ","\
+                                + "("+str(machine_id) +"," + str(run_id)+ ","\
                                 + "'"+qty+"'" + "," + str(d_ne)+");"
                     cur.execute(query)
             if "mahalanobis distance" in metrics:
@@ -170,7 +170,7 @@ def validate(traj_id, machine_id, metrics, quantities, dbaddr):
                 # get cursor to write to database
                 with dbconn.cursor() as cur:
                     query = "insert into mahalanobisdistance (machine_id, run_id, quantity, distance) values"\
-                    + "(" + str(machine_id) + "," + str(traj_id) + ","\
+                    + "(" + str(machine_id) + "," + str(run_id) + ","\
                     + "'" + qty + "'" + "," + numToSQL(d_mahalanobis) +");"
                     cur.execute(query)
             if "frequentist metric" in metrics:
@@ -204,7 +204,7 @@ def validate(traj_id, machine_id, metrics, quantities, dbaddr):
                                   run_id, quantity, ts, mu_lower, mu_upper,
                                    error_lower, error_upper) FROM stdin""") as copy:
                         for (t, mu_x_e, E_x_e) in zip(t_db, mu_x.T, E_x.T):
-                            copy.write_row((machine_id, traj_id, qty, t, mu_x_e[0], mu_x_e[1], E_x_e[0], E_x_e[1]))
+                            copy.write_row((machine_id, run_id, qty, t, mu_x_e[0], mu_x_e[1], E_x_e[0], E_x_e[1]))
 
             if "global frequentist metric" in metrics:
                 replications = []
@@ -217,7 +217,7 @@ def validate(traj_id, machine_id, metrics, quantities, dbaddr):
 
                 with dbconn.cursor() as cur:
                     query = "insert into globalfrequentistmetric (machine_id, run_id, quantity, average_relative_error, average_relative_confidence_indicator, maximum_relative_error) values"\
-                            + "(" + str(machine_id) + "," + str(traj_id) + ","\
+                            + "(" + str(machine_id) + "," + str(run_id) + ","\
                             + "'" + qty + "'" + ","\
                             + numToSQL(avg_rel_err)+ ","\
                             + numToSQL(avg_rel_conf_ind) + ","\
@@ -234,127 +234,61 @@ def validate(traj_id, machine_id, metrics, quantities, dbaddr):
 
 class Validator:
 
-    def __init__(self, properties_file) -> None:
+    def __init__(self, config: dict) -> None:
         """
         Parameters
         ----------
         properties_file : String
             path to the properties file of the gantrycrane
         """
-        # load properties file
-        with open(properties_file, 'r') as f:
-            props = yaml.safe_load(f)
-            # machine identification in database
-            self.id = props["machine id"]
-            self.name = props["machine name"]
-            # connection to database
-            self.dbaddr = "host="+props["database address"]\
-                        + " dbname=" + props["database name"]\
-                        + " user=" + props["database user"]
-            # self.dbconn = psycopg.connect(self.dbaddr)
-            self.validatortopic = props["validator topic"]
-            # executor for parallel jobs
-            self.executor = cf.ProcessPoolExecutor(max_workers=max(os.cpu_count()-4, 4))
-            
-            # dict to store validation requests as described in the on_validatorTopicMessage
-            self.validationrequest = {}
-
-            # mqtt setup
-            self.mqttc = mqtt.Client("Validator")
-            self.mqttc.on_connect = self.on_connect
-            self.mqttc.message_callback_add(self.validatortopic, self.on_validatorTopicMessage)
-
+        # machine identification in database
+        self.id = config["machine_id"]
+        self.name = config["machine_name"]
+        # connection to database
+        self.dbaddr = "host="+config["db_address"]\
+                    + " dbname=" + config["db_name"]\
+                    + " user=" + config["db_user"] + " password=" + config["db_password"]
+        # executor for parallel jobs
+        self.executor = cf.ProcessPoolExecutor(max_workers=max(os.cpu_count()-4, 4))
+        # dict to store validation requests
+        self.validationrequest = {}
+        self.metrics_to_calc = []
+        if config["normalized_euclidean_distance"]:
+            self.metrics_to_calc.append('normalized euclidean distance')
+        if config["mahalanobis_distance"]:
+            self.metrics_to_calc.append('mahalanobis distance')
+        if config["frequentist_metric"]:
+            self.metrics_to_calc.append('frequentist metric')
+        if config["global_frequentist_metric"]:
+            self.metrics_to_calc.append('global frequentist metric')
+        if config["reliability_metric"]:
+            self.metrics_to_calc.append('reliability metric')
+        if config["root_mean_squared_error"]:
+            self.metrics_to_calc.append('root mean squared error')
 
         logging.info("Created validator " + str(self))
 
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
-        self.mqttc.disconnect() # not sure if needed
+        pass
 
-    def on_connect(self, client, userdata, flags, rc):
-        logging.info("Connected with result code" + str(rc))
-        # subscribe to topics
-        self.mqttc.subscribe(self.validatortopic, qos = 2)       
-
-    def on_validatorTopicMessage(self, client, userdata, msg):
+    def run_validation(self, run_id):
         """
-        The message will have the following structure:
-        {"traj_id": id, "src": "Controller"/"Simulator"}
-
-        For each received trajectory, the validator must keep track of
-        having received a message from controller and simulator.
-        Once a message for both has been received, a validation process
-        may be spawned to calculate the validation metrics of that
-        trajectory.
-
-        a dictionary with a tuple (controller_bool, simulator_bool) 
-        seems the simplest way.
+        Simulates receiving a validation message.
+        Parameters
+        ----------
+        run_id : int
+            Trajectory ID
+        src : str
+            "Controller" or "Simulator"
         """
-        logging.info("Received message: " + str(msg.payload))
+        logging.info(f"Validating trajectory = {run_id}")
 
-        req = eval(msg.payload)
-        if req["traj_id"] not in self.validationrequest.keys():
-            # no request has been made yet, so create it.
-            self.validationrequest[req["traj_id"]] = [1,0] if req["src"] == "Controller" else [0, 1]
-            logging.info("Validation request stored" + str(self.validationrequest))
-        else:
-            # the request already exists.
-            if req["src"] == "Controller":
-                self.validationrequest[req["traj_id"]][0] = 1
-            elif req["src"] == "Simulator":
-                self.validationrequest[req["traj_id"]][1] = 1
-            
-            logging.info("Validation request updated" + str(self.validationrequest))
-
-            if 0 not in self.validationrequest[req["traj_id"]]:
-                logging.info("Spawning validation process for" + str(req["traj_id"]))
-                # no zeros means controller and simulator made a request
-                # remove the entry from the validationrequest
-                self.validationrequest.pop(req["traj_id"])
-                # spawn a validation process
-                metrics_to_calc = ['normalized euclidean distance',
-                                     'mahalanobis distance',
-                                     'frequentist metric',
-                                     'global frequentist metric',
-                                        'reliability metric', 'root mean squared error']
-                qties_to_calc = ['position', 'velocity', 'angular position',
-                                  'angular velocity']
-                self.executor.submit(validate, req["traj_id"], self.id, 
-                                     metrics_to_calc, qties_to_calc, 
-                                     self.dbaddr)
-    
-    def start(self):
-        logging.info("Validator" + str(self) + "started, will continuously listen for messages")
-        self.mqttc.connect("localhost")
-        self.mqttc.loop_forever()
-
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    with Validator("./crane-properties.yaml") as v:
-        v.start()
-
-    #---------------------------------------------------
-    # Code below is the correcting code used to correct the calculated
-    # frequentist metric
-    #---------------------------------------------------
-        # metrics_to_calc = ['normalized euclidean distance']
-        # qties_to_calc = ['position', 'velocity', 'angular position',
-        #                           'angular velocity']
-        
-        # for i in range(100, 160):
-        #     validate(i, 1, metrics_to_calc, qties_to_calc, v.dbaddr)
-    
-    
-    # validate(60, 1, datetime.datetime.now(), ['normalized euclidean distance',
-    #                                  'mahalanobis distance',
-    #                                  'frequentist metric',
-    #                                  'global frequentist metric',
-    #                                     'reliability metric', 'root mean squared error'], 
-    #                                         ['position', 'velocity', 
-    #                                          'angular position', 
-    #                                             'angular velocity'])
-    
-
-    
+        # spawn a validation process
+        qties_to_calc = ['position', 'velocity', 'angular position',
+                            'angular velocity']
+        self.executor.submit(validate, run_id, self.id,
+                                     self.metrics_to_calc, qties_to_calc,
+                                     self.dbaddr) 

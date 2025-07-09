@@ -13,6 +13,8 @@ from gantrylib.gantry_state_logger import CraneStateLogger, NullStateLogger
 
 from gantrylib.gantry_simulator import GantrySimulator
 
+from gantrylib.gantry_validator import Validator
+
 class GantryController():
     """A class representing a controller for the gantry crane
     """
@@ -71,6 +73,7 @@ class GantryController():
         # but for now, we just assume that the database is present.
         self.simulator = GantrySimulator(config)
         self.simrepls = config["replications"]
+        self.validator = Validator(config)
 
     def __enter__(self):
         """Enter the runtime context of the gantry controller.
@@ -210,9 +213,9 @@ class GantryController():
 
             # if 
             if validate:
-                logging.info("Trajectory stored, notifying simulator")
-                pass
-                logging.info("Simulator notified")
+                logging.info("Validating trajectory")
+                self.validator.run_validation(self.run)
+                logging.info("Trajectories validated and stored")
         
             # after everything has been stored without errors, commit
             self.dbconn.commit()

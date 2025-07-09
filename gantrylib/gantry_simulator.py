@@ -11,7 +11,6 @@ import sys
 # due to using multiprocessing there is a lot of stuff that needs to be
 # defined at the module level instead of in a class.
 
-ppe_futures = {}
 mqttclient = None
 validatortopic = None
 # need this here otherwise signal_done function can't reach it 
@@ -98,16 +97,7 @@ def simulate(sim, traj_id, machine_id, repl_id, t_now, dbaddr, x0, theta0, omega
             # commit to database
             dbconn.commit()
         logging.info(simid + " Wrote results to database")
-
-def signal_done(fut):
-    logging.info(str(fut.__hash__()))
-    traj_id = ppe_futures.pop(fut.__hash__()) # use pop since it returns the value
-    # check if id still exists in the ppe_futures.values
-    if traj_id not in set(ppe_futures.values()):
-        # if not, all those processes have returned and we can signal validator that simulations are done.
-        # ret = mqttclient.publish(validatortopic, payload=str({"traj_id": traj_id, "src": "Simulator"}), qos = 2, retain=False)
-        # ret.wait_for_publish()
-        logging.info("all simulations of trajectory " + str(traj_id) + " are done")
+    logging.info(f"{simid}: Exited dbconn context.")
 
 class GantrySimulator():
 
@@ -165,7 +155,7 @@ class GantrySimulator():
                         machine_id, num_replications)
                         VALUES (%s, %s, %s)""", (run_id, self.id, repls))
         self.dbconn.commit()
-        logging.info("Setting up replications")
+        logging.info(f"Setting up {repls} replications")
         repls_ids = [i for i in range(repls)]
         # sample values of r, x0, theta0 and omega0 for the simulation objects
         rs = self.rng.normal(rope_length, self.rope_length_SD, repls) # 
@@ -177,8 +167,11 @@ class GantrySimulator():
         logging.info("Submitting jobs to processing pool")
         futs = [self.executor.submit(simulate, sim, run_id, self.id, repl_id, t_now, self.dbaddr, x0, theta0, omega0) for (sim, repl_id, x0, theta0, omega0) in zip(sims, repls_ids, x0s, theta0s, omega0s)]
         logging.info(str([str(fut.__hash__()) for fut in futs]))
-        global ppe_futures
-        for fut in futs:
-            fut.add_done_callback(signal_done)
-            ppe_futures[fut.__hash__()] = run_id
-        logging.info("Simulations Done")
+        out = cf.wait(futs, 5)
+        while out.not_done:
+            logging.info(f"Done: {out.done}")
+            logging.info(f"Not done: {out.not_done}")
+            for fut in out.not_done:
+                logging.info(f"Future {fut.__hash__()} state: {'done' if fut.done() else 'running'}")
+            out = cf.wait(futs, 5)
+        logging.info("All simulations completed")
