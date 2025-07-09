@@ -47,19 +47,21 @@ class GantrySimulation():
         theta = y[2]
         omega = y[3] # dtheta/dt
 
-        rounding = 4
+        rounding = 5
 
-        if round(v, rounding) < np.round(v_tgt_smpl, rounding):
-            # when v has not hit v_tgt yet, keep accelerating at the maximum rate
-            a = self.a_max
-        elif round(v, rounding) > np.round(v_tgt_smpl, rounding):
-            # for deceleration follow u without limits
-            a = u/mc # dv/dt
-        else:
-        # if we are within range of v_target and don't need to decelerate, just set 0
-            a = 0
-            # a = u/mc # dv/dt
-            # a = self.a_max * self.sign(a) if min(abs(a), self.a_max) == self.a_max else a
+        a = u/mc
+        # if round(v, rounding) < np.round(v_tgt_smpl, rounding):
+        #     # when v has not hit v_tgt yet, keep accelerating at the maximum rate
+        #     a = u/mc
+        #     #a = self.a_max
+        # elif round(v, rounding) > np.round(v_tgt_smpl, rounding):
+        #     # for deceleration follow u without limits
+        #     a = u/mc # dv/dt
+        # else:
+        # # if we are within range of v_target and don't need to decelerate, just set 0
+        #     a = 0
+        #     # a = u/mc # dv/dt
+        #     # a = self.a_max * self.sign(a) if min(abs(a), self.a_max) == self.a_max else a
              
         alpha = -1*g*mc*np.sin(theta)/r - 2*mc*omega*rd/r\
                 - a*np.cos(theta)/(mc*r)

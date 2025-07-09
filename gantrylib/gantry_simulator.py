@@ -40,29 +40,31 @@ def simulate(sim, traj_id, machine_id, repl_id, t_now, dbaddr, x0, theta0, omega
         logging.info(simid + " got db connection " + str(dbconn))
         with dbconn.cursor() as cur:
             # fetch the trajectory input force data
-            cur.execute("SELECT ts, value FROM trajectory WHERE machine_id = %s \
-                        AND run_id = %s AND quantity = 'force';",(machine_id, traj_id))
+            cur.execute(f"""SELECT ts, value FROM trajectory WHERE machine_id = {machine_id} 
+                        AND run_id = {traj_id} AND quantity = 'force';""")
             rows = cur.fetchall()
-            logging.info(simid + " fetched trajectory input data")
             # bit of processing to go from datetime to just plain seconds
             u = [row[1] for row in rows]
+            t_now = rows[0][0] # override t_now with this timestamp
             ts = [(row[0] - rows[0][0]).total_seconds() for row in rows]
+            # fetch the trajectory velocity data (for limiting)
+            cur.execute(f"""SELECT ts, value FROM trajectory WHERE machine_id = {machine_id} 
+                        AND run_id = {traj_id} AND quantity = 'velocity';""")
+            rows = cur.fetchall()
+            # bit of processing to go from datetime to just plain seconds
+            v = [row[1] for row in rows]
             # fetch intial values for x, v, theta and omega
-            logging.info(simid + " fetching IC")
             try:
-                cur.execute("select quantity, value \
-                        from trajectory \
-                        where machine_id = " + str(machine_id) + \
-                        "AND run_id = " + str(traj_id) + \
-                        "and quantity  in ('position', 'velocity', 'angular position', 'angular velocity') \
-                        and ts = (\
-                        select min(ts) from trajectory t2 \
-                        where machine_id = " + str(machine_id) + \
-                        "AND run_id = " + str(traj_id) + \
-                        "and quantity  in ('position', 'velocity', 'angular position', 'angular velocity'));")
+                cur.execute(f"""select quantity, value from trajectory 
+                            where machine_id = {machine_id} 
+                            AND run_id = {traj_id} 
+                            and quantity  in ('position', 'velocity', 'angular position', 'angular velocity')
+                            and ts = (select min(ts) from trajectory t2 
+                            where machine_id = {machine_id} 
+                            AND run_id = {traj_id} 
+                            and quantity  in ('position', 'velocity', 'angular position', 'angular velocity'));""")
             except Exception as e:
                 logging.error(simid + " Error fetching initial conditions: " + str(e))
-            logging.info(simid + "Executed query for IC")
             rows = cur.fetchall()
             
             # shape will be sth like:
@@ -73,16 +75,15 @@ def simulate(sim, traj_id, machine_id, repl_id, t_now, dbaddr, x0, theta0, omega
             # this needs to be ordered into y_init (x0, v0, theta0, omega0)
             # easiest is to cast to dict I guess
             initvals = dict(rows)
-            logging.info(simid + " IC: " + str(initvals))
             y_init = [initvals["position"] + x0,\
                         initvals["velocity"],\
                         initvals["angular position"] + theta0,\
                         initvals["angular velocity"] + omega0]
-            logging.info(simid + " fetched initial conditions: " + str(y_init))
             # I guess we now have everything to setup the simulation
-            sol = sim.simulate(y_init, ts, ts, u)
-            logging.info(simid + " Simulation results: " + str(sol))
-            logging.info(simid + " Simulated: " + str(sol))
+            try:
+                sol = sim.simulate(y_init, ts, ts, u, v)
+            except Exception as e:
+                logging.error(simid + "Error in simulation: " + str(e))
             # simulation results can now be written to the database
             t_db = [t_now + timedelta(seconds=ts) for ts in sol.t]
             quantities = ['position', 'velocity', 'angular position', \

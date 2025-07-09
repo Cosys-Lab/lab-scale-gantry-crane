@@ -255,8 +255,8 @@ class PhysicalCrane(Crane):
         omega = np.gradient(savgol_filter(np.array(theta), 15, 6), np.array(t))
         # x is in mm and should be in meters
         x = [xs/1000 for xs in x]
-        # v is also in the wrong unit, should m/s^2 and not rpm
-        v = [vs/self.cartStepper.mm_s_to_rpm/1000 for vs in v]
+        # v is in the wrong unit, should m/s^2 and not rpm, also wrong sign
+        v = [-vs/self.cartStepper.mm_s_to_rpm/1000 for vs in v]
 
         logging.info("wp dt:" + str(wp_dt))
         logging.info("dt: " + str(np.array(t[1:-1]) - np.array(t[0:-2])))
