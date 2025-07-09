@@ -66,6 +66,8 @@ The config is exceptionally insecure, since all of the default usernames/passwor
 - port: 1883
 - user: not necessary, anonymous connections are allowed
 
+The MQTT broker is really only needed if you want to run the TrajectoryGenerator service in its MQTT mode. Ofter services (Simulator, Validator) have in this release not yet been implemented in MQTT mode.
+
 ## Software quickstart
 
 Assuming you went through the [software setup](#software-setup) and built the crane according to the [hardware quickstart](#hardware-quickstart), the fastest way to get the crane to do something is using the [run_with_hmi.py](examples/run_with_hmi.py) example.
