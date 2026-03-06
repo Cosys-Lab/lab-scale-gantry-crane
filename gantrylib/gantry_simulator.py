@@ -129,6 +129,13 @@ class GantrySimulator():
 
         logging.info("Created simulator " + str(self))
 
+
+class NullGantrySimulator:
+    """No-op simulator used when no database connection is configured."""
+
+    def run_simulations(self, run_id, repls, rope_length):
+        logging.info("Simulation skipped: no database connection configured")
+
     def __enter__(self):
         return self
 

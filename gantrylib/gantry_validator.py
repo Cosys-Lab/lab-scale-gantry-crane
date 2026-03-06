@@ -309,3 +309,10 @@ class Validator:
         self.executor.submit(validate, run_id, self.id,
                                      self.metrics_to_calc, qties_to_calc,
                                      self.dbaddr) 
+
+
+class NullValidator:
+    """No-op validator used when no database connection is configured."""
+
+    def run_validation(self, run_id):
+        logging.info("Validation skipped: no database connection configured")

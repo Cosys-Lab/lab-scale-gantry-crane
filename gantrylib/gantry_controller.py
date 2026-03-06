@@ -11,9 +11,9 @@ from scipy.signal import correlate
 from gantrylib.gantry_database_io_factory import DatabaseType
 from gantrylib.gantry_state_logger import CraneStateLogger, NullStateLogger
 
-from gantrylib.gantry_simulator import GantrySimulator
+from gantrylib.gantry_simulator import GantrySimulator, NullGantrySimulator
 
-from gantrylib.gantry_validator import Validator
+from gantrylib.gantry_validator import Validator, NullValidator
 
 class GantryController():
     """A class representing a controller for the gantry crane
@@ -69,11 +69,13 @@ class GantryController():
         self.crane = None
         self.position = 0
 
-        # should be made a bit more robust with a NullSimulator if no database connection is used.
-        # but for now, we just assume that the database is present.
-        self.simulator = GantrySimulator(config)
         self.simrepls = config["replications"]
-        self.validator = Validator(config)
+        if config["connect_to_db"]:
+            self.simulator = GantrySimulator(config)
+            self.validator = Validator(config)
+        else:
+            self.simulator = NullGantrySimulator()
+            self.validator = NullValidator()
 
     def __enter__(self):
         """Enter the runtime context of the gantry controller.

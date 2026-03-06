@@ -26,11 +26,11 @@ crane_IOUC_baudrate: 115200     # ignored in mock mode
 
 # machine motor controller settings
 cart_motor_type: serial         # serial or mock    
-cart_motor_port: COM13          # ignored in mock mode
+cart_motor_port: /dev/ttyACM2          # ignored in mock mode
 cart_encoder_counts: 65536      # number of counts per revolution of the motor
 cart_pulley_circumference: 40 # [mm] circumference of the pulley on the cart motor
 hoist_motor_type: serial        # serial or mock
-hoist_motor_port: COM8         # ignored in mock mode
+hoist_motor_port: /dev/ttyACM3         # ignored in mock mode
 hoist_encoder_counts: 65536     # number of counts per revolution of the motor
 hoist_pulley_circumference: 66  # [mm] circumference of the pulley on the hoist motor. 21*pi
 
@@ -40,7 +40,7 @@ cart_calibrated: False
 hoist_calibrated: False
 
 # database settings
-connect_to_db: True
+connect_to_db: False
 db_address: "127.0.0.1"
 db_name: gantrycrane
 db_user: postgres
